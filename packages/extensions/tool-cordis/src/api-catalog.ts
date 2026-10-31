@@ -3579,6 +3579,123 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'unionpayConnection',
+    summary: 'Owns member sessions independently of administrator credentials and local Host authorization.',
+    description: 'Owns member sessions independently of administrator credentials and local Host authorization.',
+    methods: [
+      {
+        signature: '@Remote getState(): EnterpriseConnectionView',
+        description: 'Read current display-safe state without creating a login or making a network request.',
+        parameters: [],
+        returns: 'the latest complete view.',
+      },
+      {
+        signature: '@Remote refresh(): Promise<EnterpriseConnectionView>',
+        description: 'Refresh membership, personal usage, and the authorized model catalog. Network failures preserve the last display data and mark it unavailable; revoked grants are retired.',
+        parameters: [],
+        returns: 'the complete state after the coalesced refresh.',
+      },
+      {
+        signature: '@Remote({ mode: \'stream\' }) async *follow(signal: AbortSignal): AsyncIterable<EnterpriseConnectionView>',
+        description: 'Follow complete views from the current version until the caller disconnects.',
+        parameters: [{ name: 'signal', description: 'observation lifetime, independent of sign-in lifetime.' }],
+        returns: 'the initial state and subsequent states; no credentials cross this stream.',
+      },
+      {
+        signature: '@Remote async signInCode(code: string): Promise<EnterpriseConnectionView>',
+        description: 'Redeem a member\'s one-time access code and store the resulting member session.',
+        parameters: [{ name: 'code', description: 'administrator-issued member code, never an administrator password.' }],
+        returns: 'connection state after authorization and initial synchronization.',
+      },
+      {
+        signature: '@Remote async startSso(): Promise<EnterpriseConnectionView>',
+        description: 'Start browser SSO and return its verification link once available.',
+        parameters: [],
+        returns: 'the pending attempt or its failure.',
+      },
+      {
+        signature: '@Remote async cancelSignIn(id: EnterpriseSignInId): Promise<EnterpriseConnectionView>',
+        description: 'Cancel only the named authorization attempt; an admitted credential commit is allowed to settle.',
+        parameters: [{ name: 'id', description: 'attempt shown to the caller.' }],
+        returns: 'state after polling and cancellation have settled.',
+      },
+      {
+        signature: '@Remote async signOut(): Promise<EnterpriseConnectionView>',
+        description: 'Revoke the current server session and retire the local credential even if the server is unavailable.',
+        parameters: [],
+        returns: 'signed-out state, with a failure code when remote revocation could not be confirmed.',
+      },
+      {
+        signature: 'catalog(): readonly EnterpriseModel[]',
+        description: 'Read the last authorized catalog without network activity.',
+        parameters: [],
+        returns: 'model metadata owned by this member session.',
+      },
+      {
+        signature: 'runtime(refreshCatalog: boolean = false): Promise<EnterpriseRuntime>',
+        description: 'Resolve a Host-only inference grant, coalescing renewal and binding it to the current member session. Invalid runtime responses withdraw cached model routes and expose an unavailable state.',
+        parameters: [{ name: 'refreshCatalog', description: 'when true, wait for any ordinary pending read, then revalidate even while the grant is usable.' }],
+        returns: 'credential and cancellation lifetime for an authorized model call.',
+      },
+      {
+        signature: 'async usageOwner(): Promise<EnterpriseUsageOwner | null>',
+        description: 'Capture the reporting owner before starting a model request.',
+        parameters: [],
+        returns: 'the configured origin and current member, or null without an origin.',
+      },
+      {
+        signature: 'async collectionEnabled(clientId: EnterpriseClientId): Promise<boolean | null>',
+        description: 'Read the enterprise collection switch without changing any queue.',
+        parameters: [{ name: 'clientId', description: 'the reporting plugin\'s persisted device UUID.' }],
+        returns: 'the administrator\'s collection setting, or null before an origin is configured.',
+      },
+      {
+        signature: 'async reportUsage( owner: EnterpriseUsageOwner, clientId: EnterpriseClientId, records: readonly object[], ): Promise<EnterpriseUsageDelivery>',
+        description: 'Submit one already-persisted usage batch for its captured owner. A different signed-in member cannot receive the batch; anonymous batches stay anonymous.',
+        parameters: [{ name: 'owner', description: 'identity captured when the calls began.' }, { name: 'clientId', description: 'persistent reporting-device UUID.' }, { name: 'records', description: 'white-listed reports validated by the usage plugin.' }],
+        returns: 'acknowledged rows, an explicit collection opt-out, or a request to wait for the original member.',
+      },
+    ],
+  },
+  {
+    key: 'unionpayModels',
+    summary: 'Registers exactly the current member\'s authorized model routes and removes them on logout or unload.',
+    description: 'Registers exactly the current member\'s authorized model routes and removes them on logout or unload.',
+    methods: [
+      {
+        signature: 'modelIdFor(provider: string): EnterpriseModel[\'id\'] | null',
+        description: 'Identify one route while capturing a model call\'s reporting metadata.',
+        parameters: [{ name: 'provider', description: 'selected DSH provider route.' }],
+        returns: 'the managed model UUID, or null for a route this plugin does not own.',
+      },
+    ],
+  },
+  {
+    key: 'unionpayUsage',
+    summary: 'Collection is optional and never changes a model call\'s result when reporting fails.',
+    description: 'Collection is optional and never changes a model call\'s result when reporting fails.',
+    methods: [
+      {
+        signature: '@Remote getState(): UsageDeliveryView',
+        description: 'Read delivery state without starting a network operation.',
+        parameters: [],
+        returns: 'the persisted pending count and latest delivery outcome.',
+      },
+      {
+        signature: '@Remote flush(): Promise<UsageDeliveryView>',
+        description: 'Retry one bounded batch, retaining it unless the server acknowledges every row.',
+        parameters: [],
+        returns: 'delivery state, including opt-out, identity wait, or a sanitized failure.',
+      },
+      {
+        signature: '@Remote({ mode: \'stream\' }) async *follow(signal: AbortSignal): AsyncIterable<UsageDeliveryView>',
+        description: 'Follow complete delivery states while the caller is connected.',
+        parameters: [{ name: 'signal', description: 'observation lifetime.' }],
+        returns: 'initial and subsequent queue states; reports and identities are not exposed.',
+      },
+    ],
+  },
+  {
     key: 'userQuestions',
     summary: '`ctx.userQuestions`: validation plus the scoped answerer waterfall.',
     description: '`ctx.userQuestions`: validation plus the scoped answerer waterfall.',
@@ -4574,6 +4691,22 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [{ name: 'exec', description: 'the execution object that traversed the pipeline.' }, { name: 'result', description: 'a deep-frozen snapshot of the final returned result.' }],
   },
   {
+    name: 'unionpay-model/call',
+    mode: 'serial',
+    signature: '\'unionpay-model/call\'(call: ManagedModelCall): Promise<void>',
+    summary: 'An enterprise inference attempt settled; reporting consumers finish before the observer releases it.',
+    description: 'An enterprise inference attempt settled; reporting consumers finish before the observer releases it.',
+    parameters: [{ name: 'call', description: 'request-start identity and provider-reported usage, without content or credentials.' }],
+  },
+  {
+    name: 'unionpay/changed',
+    mode: 'emit',
+    signature: '\'unionpay/changed\'(view: EnterpriseConnectionView): void',
+    summary: 'The connection\'s credential-free state or model catalog changed.',
+    description: 'The connection\'s credential-free state or model catalog changed.',
+    parameters: [{ name: 'view', description: 'complete display-safe state.' }],
+  },
+  {
     name: 'user-questions/request',
     mode: 'waterfall',
     signature: '\'user-questions/request\'( this: Scoped<Agent>, request: AskUserQuestionRequestEvent, next: () => Promise<AskUserQuestionAnswer>, ): Promise<AskUserQuestionAnswer>',
@@ -5462,6 +5595,66 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface EncodedImageAttachment {\n    mediaType: ImageMediaType;\n    data: string;\n    name?: string;\n}',
   },
   {
+    name: 'EnterpriseClientId',
+    declaration: 'export type EnterpriseClientId = Branded<\'EnterpriseClientId\'>;',
+  },
+  {
+    name: 'EnterpriseConnectionView',
+    declaration: 'export interface EnterpriseConnectionView {\n    readonly origin: string;\n    readonly status: \'unconfigured\' | \'signed-out\' | \'connected\' | \'expired\' | \'unavailable\';\n    readonly member: EnterpriseMember | null;\n    readonly projects: readonly EnterpriseProject[];\n    readonly quota: EnterpriseQuota | null;\n    readonly modelCount: number;\n    readonly error: EnterpriseFailureCode | null;\n    readonly signIn: {\n        readonly id: EnterpriseSignInId;\n        readonly status: \'pending\' | \'failed\';\n        readonly verificationUrl?: string;\n        readonly error?: EnterpriseFailureCode;\n    } | null;\n}',
+  },
+  {
+    name: 'EnterpriseFailureCode',
+    declaration: 'export type EnterpriseFailureCode = \'not-configured\' | \'invalid-response\' | \'unavailable\' | \'timeout\' | \'unauthorized\' | \'forbidden\' | \'conflict\' | \'rate-limited\' | \'cancelled\' | \'invalid-credential\' | \'sign-in-busy\' | \'invalid-input\';',
+  },
+  {
+    name: 'EnterpriseMember',
+    declaration: 'export interface EnterpriseMember {\n    readonly id: EnterpriseMemberId;\n    readonly name: string;\n    readonly department: string;\n    readonly seat: \'developer\' | \'observer\';\n}',
+  },
+  {
+    name: 'EnterpriseMemberId',
+    declaration: 'export type EnterpriseMemberId = Branded<\'EnterpriseMemberId\'>;',
+  },
+  {
+    name: 'EnterpriseModel',
+    declaration: 'export interface EnterpriseModel {\n    readonly id: EnterpriseModelId;\n    readonly name: string;\n    readonly modelId: string;\n    readonly protocol: \'openai-chat-completions\' | \'openai-responses\' | \'anthropic-messages\';\n    readonly contextWindow: number;\n    readonly maxOutputTokens: number;\n    readonly capabilities?: {\n        readonly supportsImage?: boolean | null | undefined;\n        readonly supportsToolCall?: boolean | null | undefined;\n        readonly supportsJsonSchemaOutput?: boolean | null | undefined;\n        readonly reasoning?: {\n            readonly profile: \'gateway-default\';\n        } | {\n            readonly profile: \'openai-chat-effort\' | \'openai-responses-effort\' | \'anthropic-budget\';\n            readonly levels: readonly (\'low\' | \'medium\' | \'high\')[];\n        } | undefined;\n    } | undefined;\n}',
+  },
+  {
+    name: 'EnterpriseModelId',
+    declaration: 'export type EnterpriseModelId = Branded<\'EnterpriseModelId\'>;',
+  },
+  {
+    name: 'EnterpriseProject',
+    declaration: 'export interface EnterpriseProject {\n    readonly id: EnterpriseProjectId;\n    readonly name: string;\n}',
+  },
+  {
+    name: 'EnterpriseProjectId',
+    declaration: 'export type EnterpriseProjectId = Branded<\'EnterpriseProjectId\'>;',
+  },
+  {
+    name: 'EnterpriseQuota',
+    declaration: 'export interface EnterpriseQuota {\n    readonly month: string;\n    readonly inputTokens: number;\n    readonly outputTokens: number;\n    readonly totalTokens?: number | undefined;\n    readonly requests: number;\n    readonly incompleteRequests?: number | undefined;\n    readonly budget: number | null;\n}',
+  },
+  {
+    name: 'EnterpriseRuntime',
+    declaration: 'export interface EnterpriseRuntime {\n    readonly origin: string;\n    readonly memberId: EnterpriseMemberId;\n    readonly sessionId: EnterpriseSessionId;\n    readonly token: string;\n    readonly expiresAt: number;\n    readonly models: readonly EnterpriseModel[];\n    readonly signal: AbortSignal;\n}',
+  },
+  {
+    name: 'EnterpriseSessionId',
+    declaration: 'export type EnterpriseSessionId = Branded<\'EnterpriseSessionId\'>;',
+  },
+  {
+    name: 'EnterpriseSignInId',
+    declaration: 'export type EnterpriseSignInId = Branded<\'EnterpriseSignInId\'>;',
+  },
+  {
+    name: 'EnterpriseUsageDelivery',
+    declaration: 'export type EnterpriseUsageDelivery = {\n    readonly status: \'acknowledged\';\n    readonly count: number;\n} | {\n    readonly status: \'disabled\';\n} | {\n    readonly status: \'waiting-for-member\';\n};',
+  },
+  {
+    name: 'EnterpriseUsageOwner',
+    declaration: 'export interface EnterpriseUsageOwner {\n    readonly origin: string;\n    readonly memberId: EnterpriseMemberId | null;\n}',
+  },
+  {
     name: 'EpochHeader',
     declaration: 'export interface EpochHeader {\n    config: LlmCallConfig;\n    adapterDefaults?: LlmCallConfigAdapterDefaults;\n    tools?: ToolSchema[];\n    system?: never;\n}',
   },
@@ -6028,6 +6221,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'LspRange',
     declaration: 'export interface LspRange {\n    readonly start: LspPosition;\n    readonly end: LspPosition;\n}',
+  },
+  {
+    name: 'ManagedModelCall',
+    declaration: 'export interface ManagedModelCall {\n    readonly owner: EnterpriseUsageOwner;\n    readonly enterpriseModelId: EnterpriseModelId;\n    readonly model: string;\n    readonly startedAt: number;\n    readonly latencyMs: number;\n    readonly status: \'completed\' | \'error\' | \'cancelled\';\n    readonly purpose?: NonNullable<GenerateOptions[\'purpose\']>;\n    readonly sessionId?: NonNullable<GenerateOptions[\'sessionId\']>;\n    readonly usage: ManagedTokenCounts;\n}',
+  },
+  {
+    name: 'ManagedTokenCounts',
+    declaration: 'export interface ManagedTokenCounts {\n    readonly inputTokens?: number | undefined;\n    readonly outputTokens?: number | undefined;\n    readonly reasoningTokens?: number | undefined;\n    readonly cacheReadTokens?: number | undefined;\n    readonly cacheWriteTokens?: number | undefined;\n    readonly totalTokens?: number | undefined;\n}',
   },
   {
     name: 'ManagementError',
@@ -8548,6 +8749,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'UpdateTeamTaskRequest',
     declaration: 'export interface UpdateTeamTaskRequest {\n    readonly taskId: TeamTaskId;\n    readonly expectedRevision: number;\n    readonly action: TeamTaskAction;\n    readonly subject?: string;\n    readonly description?: string;\n    readonly blockedBy?: readonly TeamTaskId[];\n    readonly writeScopes?: readonly string[];\n    readonly owner?: string;\n}',
+  },
+  {
+    name: 'UsageDeliveryView',
+    declaration: 'export interface UsageDeliveryView {\n    readonly pending: number;\n    readonly collection: \'unknown\' | \'enabled\' | \'disabled\' | \'unconfigured\';\n    readonly waitingForMember: boolean;\n    readonly lastDeliveryAt: string | null;\n    readonly error: EnterpriseFailureCode | \'queue-full\' | \'storage\' | \'invalid-usage\' | null;\n    readonly failedToPersist: number;\n}',
   },
   {
     name: 'UserMessage',

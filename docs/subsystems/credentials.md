@@ -367,6 +367,99 @@ abstract getDeviceIdentity(): Promise<{ deviceId?: string; userId?: AccountUserI
 
 Source: [`packages/credentials/deepseek-account/src/index.ts`](../../packages/credentials/deepseek-account/src/index.ts)
 
+<a id="ctxunionpayconnection--unionpayconnection"></a>
+
+### `ctx.unionpayConnection` — `UnionPayConnection`
+
+Owns member sessions independently of administrator credentials and local Host authorization.
+
+```ts cordis-catalog
+/**
+ * Read current display-safe state without creating a login or making a network request.
+ * @returns the latest complete view.
+ */
+@Remote getState(): EnterpriseConnectionView
+
+/**
+ * Refresh membership, personal usage, and the authorized model catalog.
+ * Network failures preserve the last display data and mark it unavailable; revoked grants are retired.
+ * @returns the complete state after the coalesced refresh.
+ */
+@Remote refresh(): Promise<EnterpriseConnectionView>
+
+/**
+ * Follow complete views from the current version until the caller disconnects.
+ * @param signal - observation lifetime, independent of sign-in lifetime.
+ * @returns the initial state and subsequent states; no credentials cross this stream.
+ */
+@Remote({ mode: 'stream' }) async *follow(signal: AbortSignal): AsyncIterable<EnterpriseConnectionView>
+
+/**
+ * Redeem a member's one-time access code and store the resulting member session.
+ * @param code - administrator-issued member code, never an administrator password.
+ * @returns connection state after authorization and initial synchronization.
+ */
+@Remote async signInCode(code: string): Promise<EnterpriseConnectionView>
+
+/**
+ * Start browser SSO and return its verification link once available.
+ * @returns the pending attempt or its failure.
+ */
+@Remote async startSso(): Promise<EnterpriseConnectionView>
+
+/**
+ * Cancel only the named authorization attempt; an admitted credential commit is allowed to settle.
+ * @param id - attempt shown to the caller.
+ * @returns state after polling and cancellation have settled.
+ */
+@Remote async cancelSignIn(id: EnterpriseSignInId): Promise<EnterpriseConnectionView>
+
+/**
+ * Revoke the current server session and retire the local credential even if the server is unavailable.
+ * @returns signed-out state, with a failure code when remote revocation could not be confirmed.
+ */
+@Remote async signOut(): Promise<EnterpriseConnectionView>
+
+/**
+ * Read the last authorized catalog without network activity.
+ * @returns model metadata owned by this member session.
+ */
+catalog(): readonly EnterpriseModel[]
+
+/**
+ * Resolve a Host-only inference grant, coalescing renewal and binding it to the current member session.
+ * Invalid runtime responses withdraw cached model routes and expose an unavailable state.
+ * @param refreshCatalog - when true, wait for any ordinary pending read, then revalidate even while the grant is usable.
+ * @returns credential and cancellation lifetime for an authorized model call.
+ */
+runtime(refreshCatalog: boolean = false): Promise<EnterpriseRuntime>
+
+/**
+ * Capture the reporting owner before starting a model request.
+ * @returns the configured origin and current member, or null without an origin.
+ */
+async usageOwner(): Promise<EnterpriseUsageOwner | null>
+
+/**
+ * Read the enterprise collection switch without changing any queue.
+ * @param clientId - the reporting plugin's persisted device UUID.
+ * @returns the administrator's collection setting, or null before an origin is configured.
+ */
+async collectionEnabled(clientId: EnterpriseClientId): Promise<boolean | null>
+
+/**
+ * Submit one already-persisted usage batch for its captured owner.
+ * A different signed-in member cannot receive the batch; anonymous batches stay anonymous.
+ * @param owner - identity captured when the calls began.
+ * @param clientId - persistent reporting-device UUID.
+ * @param records - white-listed reports validated by the usage plugin.
+ * @returns acknowledged rows, an explicit collection opt-out, or a request to wait for the original member.
+ */
+async reportUsage( owner: EnterpriseUsageOwner, clientId: EnterpriseClientId, records: readonly object[], ): Promise<EnterpriseUsageDelivery>
+```
+
+Source: [`packages/credentials/unionpay-connection/src/index.ts`](../../packages/credentials/unionpay-connection/src/index.ts)
+
 <a id="authorization-events"></a>
 
 ### `authorization/*` events
@@ -486,6 +579,27 @@ Local grant removal has completed.
 ```
 
 Source: [`packages/credentials/deepseek-account/src/index.ts`](../../packages/credentials/deepseek-account/src/index.ts)
+
+<a id="unionpay-events"></a>
+
+### `unionpay/*` events
+
+<a id="unionpaychanged--emit"></a>
+
+#### `unionpay/changed` — emit
+
+The connection's credential-free state or model catalog changed.
+
+```ts cordis-catalog
+/**
+ * The connection's credential-free state or model catalog changed.
+ * @param view - complete display-safe state.
+ * @mode emit
+ */
+'unionpay/changed'(view: EnterpriseConnectionView): void
+```
+
+Source: [`packages/credentials/unionpay-connection/src/types.ts`](../../packages/credentials/unionpay-connection/src/types.ts)
 <!-- END GENERATED cordis-surface -->
 
 The account Service Definition exposes getState, getProfile, getBalance, getUnnotifiedBonuses, ackBonusNotified, startSignIn, cancelSignIn, signOut, watch, and Host-only resolveToken and getPlatformSession. The platform provider implements it with an AuthorizationFlow and a private GrantRecord. AccountView distinguishes stored presence from server validation; attempt IDs bind cancellation to one local flow. See [the account package](../../packages/credentials/deepseek-account/README.md).

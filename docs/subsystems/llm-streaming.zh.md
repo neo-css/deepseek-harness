@@ -1151,6 +1151,23 @@ Types: [FileAttachmentRef](attachment.zh.md) · [ImageAttachmentRef](attachment.
 
 Source: [`packages/llm/llm/src/index.ts`](../../packages/llm/llm/src/index.ts)
 
+<a id="ctxunionpaymodels--unionpaymodels"></a>
+
+### `ctx.unionpayModels` — `UnionPayModels`
+
+Registers exactly the current member's authorized model routes and removes them on logout or unload.
+
+```ts cordis-catalog
+/**
+ * Identify one route while capturing a model call's reporting metadata.
+ * @param provider - selected DSH provider route.
+ * @returns the managed model UUID, or null for a route this plugin does not own.
+ */
+modelIdFor(provider: string): EnterpriseModel['id'] | null
+```
+
+Source: [`packages/llm/llm-unionpay/src/index.ts`](../../packages/llm/llm-unionpay/src/index.ts)
+
 <a id="llm-events"></a>
 
 ### `llm/*` events
@@ -1199,4 +1216,25 @@ Waterfall around every streaming model call (retry, replay, routing). Bound to t
 ```
 
 Source: [`packages/llm/llm/src/index.ts`](../../packages/llm/llm/src/index.ts)
+
+<a id="unionpay-model-events"></a>
+
+### `unionpay-model/*` events
+
+<a id="unionpay-modelcall--serial"></a>
+
+#### `unionpay-model/call` — serial
+
+An enterprise inference attempt settled; reporting consumers finish before the observer releases it.
+
+```ts cordis-catalog
+/**
+ * An enterprise inference attempt settled; reporting consumers finish before the observer releases it.
+ * @param call - request-start identity and provider-reported usage, without content or credentials.
+ * @mode serial
+ */
+'unionpay-model/call'(call: ManagedModelCall): Promise<void>
+```
+
+Source: [`packages/llm/llm-unionpay/src/types.ts`](../../packages/llm/llm-unionpay/src/types.ts)
 <!-- END GENERATED cordis-surface -->

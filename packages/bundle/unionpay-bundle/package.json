@@ -1,0 +1,62 @@
+{
+  "name": "@deepseek-ai/dsh-unionpay-bundle",
+  "description": "Optional UnionPay Code enterprise sign-in, managed models, and usage reporting.",
+  "version": "0.2.1-rc.5.1",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "cordis.patch.yml",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "workspace:~"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "workspace:~",
+    "@deepseek-ai/dsh-credentials-local": "workspace:*",
+    "@deepseek-ai/dsh-authorization": "workspace:*",
+    "@deepseek-ai/dsh-llm": "workspace:*",
+    "@deepseek-ai/dsh-storage": "workspace:*",
+    "@deepseek-ai/dsh-storage-json": "workspace:*",
+    "@deepseek-ai/dsh-storage-domain": "workspace:*",
+    "@deepseek-ai/dsh-loader-smoke": "workspace:*",
+    "@deepseek-ai/dsh-app-boot": "workspace:*",
+    "esbuild": "^0.28.2",
+    "hono": "^4.12.9",
+    "@hono/node-server": "^1.19.11",
+    "jose": "6.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/bundle/unionpay-bundle"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-unionpay-connection": "workspace:*",
+    "@deepseek-ai/dsh-llm-unionpay": "workspace:*",
+    "@deepseek-ai/dsh-unionpay-usage": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-unionpay": "workspace:*"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

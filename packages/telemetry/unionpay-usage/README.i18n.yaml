@@ -1,0 +1,37 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/telemetry/unionpay-usage/README.md
+/:
+  en: c47732e2a124b9f0
+  zh: a7568f2f7d7ac08f
+/deepseek-ai-dsh-unionpay-usage:
+  en: 8e3e684b41fe6b26
+  zh: c7f01db196ad8b69
+/deepseek-ai-dsh-unionpay-usage/summary:
+  en: 2237bec5bc182c53
+  zh: 1d4794055a00c025
+/deepseek-ai-dsh-unionpay-usage/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 5b6bd00fce5371c3
+/deepseek-ai-dsh-unionpay-usage/use-this-package:
+  en: 6a6bc5a2394bde20
+  zh: 773bb69d540cf2de
+/deepseek-ai-dsh-unionpay-usage/understand-the-implementation:
+  en: c62a4c0422f044de
+  zh: 802ff84934e7f4d0
+/deepseek-ai-dsh-unionpay-usage/further-exploration:
+  en: ab2cfa45d56329f3
+  zh: bec7f3217c7c6c4f
+/deepseek-ai-dsh-unionpay-usage/model-experience:
+  en: 066d1791f2c19809
+  zh: e0103e39ac14a251
+/deepseek-ai-dsh-unionpay-usage/model-experience/kv-cache-effect:
+  en: 5560c741cb49ef9b
+  zh: 0835752ab7997bcb
+/deepseek-ai-dsh-unionpay-usage/known-limitations-and-deferred-work:
+  en: c39bb4c438a0d0e9
+  zh: f26a54a941e03466
+/deepseek-ai-dsh-unionpay-usage/known-limitations-and-deferred-work/dev-note:
+  en: 0a1253c6f7b5e8b9
+  zh: 9f56528562c7c914

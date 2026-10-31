@@ -193,9 +193,9 @@ function scriptedFace(overrides: {
         { id: 'openai', name: 'openai' },
       ]))),
       listConfigurableProviders: vi.fn(() => Promise.resolve(remoteOk([
-        { provider: 'deepseek-official', displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [], active: true },
+        { provider: 'deepseek-official', declared: true, displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [], active: true },
         {
-          provider: 'openai', displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'], active: true,
+          provider: 'openai', declared: true, displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'], active: true,
           defaultBaseURL: 'https://api.openai.com/v1', baseURLEnv: ['FIXTURE_ENDPOINT'], nativeAuth: { env: ['OPENAI_API_KEY'], oauth: false },
         },
         {
@@ -203,7 +203,7 @@ function scriptedFace(overrides: {
           defaultBaseURL: 'https://api.anthropic.com', baseURLEnv: ['FIXTURE_ENDPOINT'],
           nativeAuth: { env: ['ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_OAUTH_TOKEN', 'ANTHROPIC_API_KEY'], oauth: true },
         },
-        { provider: 'zombie', displayName: 'zombie', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'zombie'], active: false },
+        { provider: 'zombie', declared: true, displayName: 'zombie', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'zombie'], active: false },
         { provider: 'broken', displayName: 'broken', settingsNs: 'llm-pi-ai', settingsPath: ['nope', 'x'], active: false },
         { provider: 'plain', displayName: 'plain', settingsNs: 'llm-plain', settingsPath: ['profiles', 'plain'], active: false },
       ].map(({ active: _active, ...entry }) => entry)))),
@@ -398,7 +398,7 @@ describe('ModelsSection', () => {
       />)
       expect(screen.getByRole('heading', { name: en.title })).toBeTruthy()
       expect(screen.queryByLabelText(en.keyInput)).toBeNull()
-      expect(screen.queryByRole('button', { name: en.add })).toBeNull()
+      expect(screen.queryByRole('button', { name: en.addCustom })).toBeNull()
     } finally {
       await act(async () => { read.resolve(remoteOk({})); await refreshing })
     }
@@ -505,7 +505,7 @@ describe('ModelsSection', () => {
 
   it('checks current readiness before adding or starting removal from rendered rows', async () => {
     const { controller, mutate, unset } = await mountSection()
-    const add = screen.getByRole('button', { name: en.add })
+    const add = screen.getByRole('button', { name: en.addCustom })
     const remove = screen.getByRole('button', { name: openaiCopy(en.removeProvider) })
     const ready = controller.store.getSnapshot()
     const snapshot = vi.spyOn(controller.store, 'getSnapshot').mockReturnValue({ ...ready, status: 'loading' })
@@ -520,12 +520,12 @@ describe('ModelsSection', () => {
       snapshot.mockRestore()
     }
     fireEvent.click(add)
-    expect(screen.getByLabelText(en.provider)).toBeTruthy()
+    expect(screen.getByLabelText(en.customRoute)).toBeTruthy()
   })
 
   it('blocks new Add and Remove actions while a joined refresh retains an open add draft', async () => {
     const { controller, face } = await mountSection()
-    const add = screen.getByRole<HTMLButtonElement>('button', { name: en.add })
+    const add = screen.getByRole<HTMLButtonElement>('button', { name: en.addCustom })
     const remove = screen.getByRole<HTMLButtonElement>('button', { name: openaiCopy(en.removeProvider) })
     const read = Promise.withResolvers<RemoteResult<Record<string, CredentialInfo>>>()
     face.credentials.describe.mockImplementationOnce(() => read.promise)
@@ -552,7 +552,7 @@ describe('ModelsSection', () => {
     expect(key.value).toBe('sk-unsaved-add-draft')
     fireEvent.click(screen.getByRole('button', { name: en.cancel }))
     expect(screen.queryByLabelText(en.keyInput)).toBeNull()
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: en.add }).disabled).toBe(true)
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: en.addCustom }).disabled).toBe(true)
   })
 
   it('waits for saved credential confirmation before removing its managed key', async () => {
@@ -603,7 +603,7 @@ describe('ModelsSection', () => {
     const scripted = scriptedFace()
     scripted.face.settings.describe.mockResolvedValue(remoteOk({ writable: true, hasDocument: false, namespaces: [] }))
     await mountFace(scripted)
-    expect(screen.queryByRole('button', { name: en.add })).toBeNull()
+    expect(screen.queryByRole('button', { name: en.addCustom })).toBeNull()
   })
 
   it('offers only providers whose settings namespace can open an editor', async () => {
@@ -613,26 +613,20 @@ describe('ModelsSection', () => {
       namespaces: wireNamespaces().filter(view => view.ns !== 'llm-pi-ai'),
     }))
     await mountFace(scripted)
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    // Without the pi-ai namespace nothing can be hand-declared, so the card
-    // is the catalog form alone: no mode switch, no custom panel.
-    expect(screen.queryByRole('tablist')).toBeNull()
-    expect(screen.queryByRole('textbox', { name: en.customRoute })).toBeNull()
-    expect(screen.queryByRole('option', { name: 'anthropic' })).toBeNull()
-    expect(screen.getByRole('option', { name: 'plain' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: en.addCustom })).toBeNull()
   })
 
   it('shows a catalog diagnostic while keeping the provider editable', async () => {
     const scripted = scriptedFace()
     const failure = 'llm-pi-ai: provider "openai" model "111" needs an api'
     scripted.face.llm.listConfigurableProviders.mockResolvedValue(remoteOk([
-      { provider: 'openai', displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'], error: failure },
+      { provider: 'openai', declared: true, displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'], error: failure },
     ]))
     await mountFace(scripted)
     expect(screen.getByRole('alert').textContent).toBe(failure)
     fireEvent.click(screen.getByRole('button', { name: openaiCopy(en.editProvider) }))
     expect(await screen.findByLabelText(en.keyInput)).toBeTruthy()
-    expect(screen.getByRole('button', { name: en.add })).toBeTruthy()
+    expect(screen.getByRole('button', { name: en.addCustom })).toBeTruthy()
   })
 
   it('renders nothing before the slot injects its dependencies', () => {
@@ -648,7 +642,7 @@ describe('ModelsSection', () => {
       { id: 'deepseek-official', name: 'DeepSeek' },
     ]))
     scripted.face.llm.listConfigurableProviders.mockResolvedValue(remoteOk([
-      { provider: 'deepseek-official', displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [], error: failure },
+      { provider: 'deepseek-official', declared: true, displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [], error: failure },
     ]))
     scripted.face.credentials.describe.mockResolvedValue(remoteOk({
       DEEPSEEK_API_KEY: { configured: false, writable: true },
@@ -677,35 +671,12 @@ describe('ModelsSection', () => {
     expect(cardSeatCalls(renderSlot)).toContainEqual(['deepseek-official', true, false, 'llm-deepseek'])
   })
 
-  it('dispatches the provider-card seat on the add-provider draft with its dormant row', async () => {
-    const { renderSlot } = await mountSection()
-    renderSlot.mockClear()
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    expect(cardSeatCalls(renderSlot)).toContainEqual(['anthropic', false, false, 'llm-pi-ai'])
-  })
-
-  it('derives the draft seat\'s key fact from the page\'s conventional reference', async () => {
-    const scripted = scriptedFace()
-    scripted.face.credentials.describe.mockImplementation((refs: string[]) => Promise.resolve(remoteOk(
-      Object.fromEntries(refs.map(ref => [ref, {
-        configured: ref === 'OPENAI_API_KEY' || ref === 'ANTHROPIC_API_KEY',
-        writable: true,
-      }])),
-    )))
-    const { renderSlot } = await mountFace(scripted)
-    renderSlot.mockClear()
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    // The dormant row names no reference yet; the seat still reports the
-    // derived ANTHROPIC_API_KEY the editor itself displays as configured.
-    expect(cardSeatCalls(renderSlot)).toContainEqual(['anthropic', false, true, 'llm-pi-ai'])
-  })
-
   it('skips the draft seat when a refresh drops the dormant row', async () => {
     const { renderSlot, face, controller } = await mountSection()
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
+    fireEvent.click(screen.getByRole('button', { name: en.addCustom }))
     const directory = [
-      { provider: 'deepseek-official', displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [], active: true },
-      { provider: 'openai', displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'], active: true },
+      { provider: 'deepseek-official', declared: true, displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [], active: true },
+      { provider: 'openai', declared: true, displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'], active: true },
     ].map(({ active: _active, ...entry }) => entry)
     face.llm.listConfigurableProviders.mockImplementation(() => Promise.resolve(remoteOk(directory)))
     renderSlot.mockClear()
@@ -723,7 +694,7 @@ describe('ModelsSection', () => {
     expect(screen.getByText('openai')).toBeTruthy()
     expect(screen.queryByText('Active')).toBeNull()
     expect(screen.queryByText('Inactive')).toBeNull()
-    expect(screen.getByText(en.add)).toBeTruthy()
+    expect(screen.getByText(en.addCustom)).toBeTruthy()
   })
 
   it('leaves the unkeyed provider a plain row once another provider is usable', async () => {
@@ -811,7 +782,7 @@ describe('ModelsSection', () => {
   })
 
   it('uses one stable provider identity in action copy', () => {
-    const target = { provider: 'deepseek-official', displayName: 'DeepSeek' }
+    const target = { provider: 'deepseek-official', declared: true, displayName: 'DeepSeek' }
     expect(providerTargetLabel(target)).toBe('DeepSeek (deepseek-official)')
     expect(providerCopy(en.deleteTitle, target)).toBe('Delete DeepSeek (deepseek-official)?')
     expect(providerTargetLabel(OPENAI_TARGET)).toBe('openai')
@@ -839,7 +810,7 @@ describe('ModelsSection', () => {
     expect((await screen.findByRole('status')).textContent).toBe(
       providerCopy(en.savedProvider, { provider: 'deepseek-official', displayName: 'DeepSeek' }),
     )
-    fireEvent.click(screen.getByText(en.add))
+    fireEvent.click(screen.getByText(en.addCustom))
     expect(screen.queryByText(providerCopy(en.savedProvider, { provider: 'deepseek-official', displayName: 'DeepSeek' }))).toBeNull()
   })
 
@@ -1469,54 +1440,17 @@ describe('ModelsSection', () => {
     ])
   })
 
-  it('adds a dormant provider with a derived reference and stores its key', async () => {
-    const { mutate, set } = await mountSection()
-    fireEvent.click(screen.getByText(en.add))
-    const pick = await screen.findByLabelText<HTMLSelectElement>(en.provider)
-    expect([...pick.options].map(option => option.value)).toEqual(['anthropic', 'broken', 'plain'])
-    expect(pick.value).toBe('anthropic')
-    // A dormant route shows its catalog endpoint and the first variable its
-    // provider reads; a typed key still stores under the derived reference.
-    fireEvent.click(screen.getByText(en.customized))
-    expect(screen.getByLabelText<HTMLInputElement>(en.baseUrl).placeholder).toBe('https://api.anthropic.com')
-    const addKey = screen.getByLabelText<HTMLInputElement>(en.keyInput)
-    expect(addKey.placeholder).toBe(en.keyPlaceholderFallback.replace('{hint}', 'ANTHROPIC_AUTH_TOKEN'))
-    fireEvent.change(addKey, { target: { value: 'sk-ant' } })
-    fireEvent.click(screen.getByText(en.apply))
-    await waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
-    expect(mutate.mock.calls[0]).toEqual([
-      'llm-pi-ai',
-      [{ op: 'set', path: ['providers', 'anthropic', 'apiKeyEnv'], value: 'ANTHROPIC_API_KEY' }],
-      0,
-    ])
-    await waitFor(() => { expect(set).toHaveBeenCalledWith('ANTHROPIC_API_KEY', 'sk-ant') })
-  })
-
-  it('keeps pi-ai provider-native authentication when no key is entered', async () => {
-    const { mutate, set } = await mountSection()
-    fireEvent.click(screen.getByText(en.add))
-    await screen.findByLabelText(en.provider)
-    fireEvent.click(screen.getByText(en.apply))
-    await waitFor(() => { expect(mutate).toHaveBeenCalledOnce() })
-    expect(mutate.mock.calls[0]).toEqual([
-      'llm-pi-ai',
-      [{ op: 'set', path: ['providers', 'anthropic'], value: {} }],
-      0,
-    ])
-    expect(set).not.toHaveBeenCalled()
-  })
-
   it('retries only the credential after refreshed settings already committed', async () => {
     const committed = wireNamespaces()[2]!
     const afterSettings: SettingsNamespaceView = {
       ...committed,
       value: { providers: {
         ...(committed.value as { providers: object }).providers,
-        anthropic: { apiKeyEnv: 'ANTHROPIC_API_KEY' },
+        openai: { apiKeyEnv: 'OPENAI_API_KEY', baseURL: 'https://updated.example/v1', headers: { 'X-Team': 'a' } },
       } },
       user: { providers: {
         ...(committed.user as { providers: object }).providers,
-        anthropic: { apiKeyEnv: 'ANTHROPIC_API_KEY' },
+        openai: { apiKeyEnv: 'OPENAI_API_KEY', baseURL: 'https://updated.example/v1', headers: { 'X-Team': 'a' } },
       } },
       revision: 1,
     }
@@ -1525,8 +1459,9 @@ describe('ModelsSection', () => {
       .mockResolvedValueOnce(remoteFail('credential store unavailable'))
       .mockResolvedValueOnce(remoteOk(undefined))
     const { face, controller, mirror } = await mountSection({ mutate, set })
-    fireEvent.click(screen.getByText(en.add))
-    await screen.findByLabelText(en.provider)
+    fireEvent.click(screen.getByRole('button', { name: openaiCopy(en.editProvider) }))
+    fireEvent.click(screen.getByText(en.customized))
+    fireEvent.change(screen.getByLabelText(en.baseUrl), { target: { value: 'https://updated.example/v1' } })
     fireEvent.change(screen.getByLabelText<HTMLInputElement>(en.keyInput), { target: { value: 'sk-ant' } })
     fireEvent.click(screen.getByText(en.apply))
     await screen.findByText('credential store unavailable')
@@ -1546,30 +1481,16 @@ describe('ModelsSection', () => {
     fireEvent.click(screen.getByText(en.apply))
     await waitFor(() => { expect(set).toHaveBeenCalledTimes(2) })
     expect(mutate).toHaveBeenCalledOnce()
-    expect(set).toHaveBeenLastCalledWith('ANTHROPIC_API_KEY', 'sk-ant')
-  })
-
-  it('switches the add card target and degrades unknown or broken targets loudly', async () => {
-    await mountSection()
-    fireEvent.click(screen.getByText(en.add))
-    const pick = await screen.findByLabelText<HTMLSelectElement>(en.provider)
-    fireEvent.change(pick, { target: { value: 'broken' } })
-    await screen.findByText(/unresolvable settings path/)
-    fireEvent.change(pick, { target: { value: 'plain' } })
-    await waitFor(() => {
-      expect(screen.getAllByText(content => content.includes(en.advancedHint)).length).toBeGreaterThan(0)
-    })
-    // The hint-only card cannot apply anything, and offers no key field.
-    expect(screen.getByText<HTMLButtonElement>(en.apply).disabled).toBe(true)
-    expect(screen.queryAllByLabelText(en.keyInput)).toHaveLength(0)
+    expect(set).toHaveBeenLastCalledWith('OPENAI_API_KEY', 'sk-ant')
   })
 
   it('surfaces a rejected settings write and never stores the key after it', async () => {
     const { set } = await mountSection({
       mutate: vi.fn(() => Promise.resolve(remoteFail('llm-pi-ai: unknown pi-ai provider "bogus"', 'settings/rejected'))),
     })
-    fireEvent.click(screen.getByText(en.add))
-    await screen.findByLabelText(en.provider)
+    fireEvent.click(screen.getByRole('button', { name: openaiCopy(en.editProvider) }))
+    fireEvent.click(screen.getByText(en.customized))
+    fireEvent.change(screen.getByLabelText(en.baseUrl), { target: { value: 'https://updated.example/v1' } })
     fireEvent.change(screen.getByLabelText<HTMLInputElement>(en.keyInput), { target: { value: 'sk-x' } })
     fireEvent.click(screen.getByText(en.apply))
     await screen.findByText(/unknown pi-ai provider/)
@@ -1737,7 +1658,7 @@ describe('ModelsSection', () => {
     />)
     expect(screen.getByText(en.readOnly)).toBeTruthy()
     expect(screen.getAllByText<HTMLButtonElement>(en.remove).every(button => button.disabled)).toBe(true)
-    expect(screen.getByText<HTMLButtonElement>(en.add).disabled).toBe(true)
+    expect(screen.getByText<HTMLButtonElement>(en.addCustom).disabled).toBe(true)
   })
 
   it('toggles the row editor closed on a second edit click and on cancel', async () => {
@@ -1754,43 +1675,44 @@ describe('ModelsSection', () => {
     expect(mutate).not.toHaveBeenCalled()
   })
 
-  it('opens the add card on the catalog mode with both modes offered', async () => {
-    await mountSection()
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    const modes = screen.getByRole('tablist', { name: en.addMode })
-    expect(within(modes).getByRole('tab', { name: en.addCatalog }).getAttribute('aria-selected')).toBe('true')
-    expect(within(modes).getByRole('tab', { name: en.addCustom }).getAttribute('aria-selected')).toBe('false')
-    expect(screen.getByText(en.addCatalogHint)).toBeTruthy()
-    expect(screen.queryByText(en.addCustomHint)).toBeNull()
-    expect(screen.getByRole('combobox', { name: en.provider })).toBeTruthy()
-    // The custom panel is mounted but hidden, so its fields are not reachable.
-    expect(screen.queryByRole('textbox', { name: en.customRoute })).toBeNull()
+  it('shows only custom model APIs without a deployment option', async () => {
+    const scripted = scriptedFace()
+    const directory = await scripted.face.llm.listConfigurableProviders()
+    scripted.face.llm.listConfigurableProviders.mockResolvedValue(remoteOk(directory.value.map(entry => ({ ...entry, declared: false }))))
+    await mountFace(scripted)
+    expect(screen.queryByText('DeepSeek')).toBeNull()
+    expect(screen.queryByText('openai')).toBeNull()
+    expect(screen.getAllByRole('button').map(button => button.textContent?.trim())).toMatchInlineSnapshot(`
+      [
+        "Custom model API",
+      ]
+    `)
+    fireEvent.click(screen.getByRole('button', { name: en.addCustom }))
+    expect(screen.queryByRole('tablist', { name: en.addMode })).toBeNull()
+    expect(screen.queryByText(en.addCatalog)).toBeNull()
+    expect(screen.queryByLabelText(en.provider)).toBeNull()
+    expect(screen.getAllByText(en.addCustomHint)).toHaveLength(1)
+    expect(screen.getByPlaceholderText(en.customBaseUrlPlaceholder)).toBeTruthy()
+    expect(screen.getByLabelText(en.customApi)).toBeTruthy()
+    expect(screen.getByRole('button', { name: en.create })).toHaveProperty('disabled', true)
+    fireEvent.click(screen.getByRole('button', { name: en.cancel }))
+    expect(screen.getByRole('button', { name: en.addCustom })).toBeTruthy()
   })
 
-  it('switches between the modes without losing either draft', async () => {
-    await mountSection()
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    fireEvent.change(screen.getByLabelText(en.keyInput), { target: { value: 'sk-catalog' } })
-
-    fireEvent.click(screen.getByRole('tab', { name: en.addCustom }))
-    expect(screen.getByText(en.addCustomHint)).toBeTruthy()
-    expect(screen.queryByText(en.addCatalogHint)).toBeNull()
-    expect(screen.queryByRole('combobox', { name: en.provider })).toBeNull()
-    fireEvent.change(screen.getByRole('textbox', { name: en.customRoute }), { target: { value: 'acme' } })
-
-    // Both panels stay mounted from here on, so the shown one is queried by name.
-    fireEvent.click(screen.getByRole('tab', { name: en.addCatalog }))
-    const catalog = screen.getByRole('tabpanel', { name: en.addCatalog })
-    expect(within(catalog).getByLabelText<HTMLInputElement>(en.keyInput).value).toBe('sk-catalog')
-    fireEvent.click(screen.getByRole('tab', { name: en.addCustom }))
-    expect(screen.getByRole<HTMLInputElement>('textbox', { name: en.customRoute }).value).toBe('acme')
+  it('keeps saved custom API editors available on the custom-only page', async () => {
+    const scripted = scriptedFace()
+    const directory = await scripted.face.llm.listConfigurableProviders()
+    scripted.face.llm.listConfigurableProviders.mockResolvedValue(remoteOk(directory.value.map(entry =>
+      ({ ...entry, declared: entry.provider === 'openai' }))))
+    await mountFace(scripted)
+    expect(screen.getByRole('button', { name: openaiCopy(en.editProvider) })).toBeTruthy()
+    expect(screen.queryByText('DeepSeek')).toBeNull()
   })
 
   it('offers the same key reveal control on a custom provider', async () => {
     await mountSection()
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    fireEvent.click(screen.getByRole('tab', { name: en.addCustom }))
-    const panel = within(screen.getByRole('tabpanel', { name: en.addCustom }))
+    fireEvent.click(screen.getByRole('button', { name: en.addCustom }))
+    const panel = screen
     const input = panel.getByLabelText<HTMLInputElement>(en.keyInput)
     expect(panel.queryByRole('button', { name: en.keyReveal })).toBeNull()
     fireEvent.change(input, { target: { value: 'custom-test-key' } })
@@ -1803,14 +1725,12 @@ describe('ModelsSection', () => {
   it('opens on the custom mode when every catalog provider is already configured', async () => {
     const scripted = scriptedFace()
     scripted.face.llm.listConfigurableProviders.mockResolvedValue(remoteOk([
-      { provider: 'deepseek-official', displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [] },
-      { provider: 'openai', displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'] },
+      { provider: 'deepseek-official', declared: true, displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [] },
+      { provider: 'openai', declared: true, displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'] },
     ]))
     await mountFace(scripted)
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    const catalog = screen.getByRole<HTMLButtonElement>('tab', { name: en.addCatalog })
-    expect(catalog.disabled).toBe(true)
-    expect(screen.getByRole('tab', { name: en.addCustom }).getAttribute('aria-selected')).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: en.addCustom }))
+    expect(screen.queryByRole('tablist')).toBeNull()
     expect(screen.getByRole('textbox', { name: en.customRoute })).toBeTruthy()
   })
 
@@ -1818,7 +1738,7 @@ describe('ModelsSection', () => {
     const scripted = scriptedFace()
     scripted.face.llm.listConfigurableProviders.mockResolvedValue(remoteOk([]))
     await mountFace(scripted)
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
+    fireEvent.click(screen.getByRole('button', { name: en.addCustom }))
     expect(screen.queryByRole('tablist')).toBeNull()
     expect(screen.queryByRole('combobox', { name: en.provider })).toBeNull()
     expect(screen.getByRole('textbox', { name: en.customRoute })).toBeTruthy()
@@ -1827,7 +1747,7 @@ describe('ModelsSection', () => {
   it('disables the add action when neither mode can proceed', async () => {
     const scripted = scriptedFace()
     scripted.face.llm.listConfigurableProviders.mockResolvedValue(remoteOk([
-      { provider: 'openai', displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'] },
+      { provider: 'openai', declared: true, displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'] },
     ]))
     // A pi-ai schema naming no protocol leaves nothing to declare either.
     const protocolless = JSON.parse(JSON.stringify(
@@ -1838,48 +1758,22 @@ describe('ModelsSection', () => {
       namespaces: wireNamespaces().map(view => view.ns === 'llm-pi-ai' ? { ...view, schema: protocolless } : view),
     }))
     await mountFace(scripted)
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: en.add }).disabled).toBe(true)
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: en.addCustom }).disabled).toBe(true)
   })
 
   it('shows the custom panel when a refresh drops every configurable row mid-card', async () => {
     const { face, controller } = await mountSection()
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    expect(screen.getByRole('combobox', { name: en.provider })).toBeTruthy()
-    // The directory empties while the card is open: the only mode left is the
-    // custom one, whose panel was never visited.
+    fireEvent.click(screen.getByRole('button', { name: en.addCustom }))
+    expect(screen.getByRole('textbox', { name: en.customRoute })).toBeTruthy()
     face.llm.listConfigurableProviders.mockResolvedValue(remoteOk([]))
     await act(async () => { await controller.load() })
     expect(screen.queryByRole('tablist')).toBeNull()
     expect(screen.getByRole('textbox', { name: en.customRoute })).toBeTruthy()
   })
 
-  it('picks a catalog target when the catalog becomes addable after the card opened', async () => {
-    const scripted = scriptedFace()
-    const exhausted = [
-      { provider: 'deepseek-official', displayName: 'DeepSeek', settingsNs: 'llm-deepseek', settingsPath: [] },
-      { provider: 'openai', displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'] },
-    ]
-    scripted.face.llm.listConfigurableProviders.mockResolvedValue(remoteOk(exhausted))
-    const { controller } = await mountFace(scripted)
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    expect(screen.getByRole<HTMLButtonElement>('tab', { name: en.addCatalog }).disabled).toBe(true)
-    // A dormant route appears (another client deleted its profile, say).
-    scripted.face.llm.listConfigurableProviders.mockResolvedValue(remoteOk([
-      ...exhausted,
-      { provider: 'anthropic', displayName: 'anthropic', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'anthropic'] },
-    ]))
-    await act(async () => { await controller.load() })
-    const catalog = screen.getByRole<HTMLButtonElement>('tab', { name: en.addCatalog })
-    expect(catalog.disabled).toBe(false)
-    fireEvent.click(catalog)
-    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: en.provider }).value).toBe('anthropic')
-    expect(within(screen.getByRole('tabpanel', { name: en.addCatalog })).getByLabelText(en.keyInput)).toBeTruthy()
-  })
-
   it('drops the custom panel when the pi-ai namespace disappears mid-card', async () => {
     const { face, controller, mirror } = await mountSection()
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    fireEvent.click(screen.getByRole('tab', { name: en.addCustom }))
+    fireEvent.click(screen.getByRole('button', { name: en.addCustom }))
     expect(screen.getByRole('textbox', { name: en.customRoute })).toBeTruthy()
     face.settings.describe.mockResolvedValue(remoteOk({
       writable: true, hasDocument: false,
@@ -1890,19 +1784,17 @@ describe('ModelsSection', () => {
       await mirror.load()
       await controller.load()
     })
-    // Nothing can be declared any more, so the form is gone rather than left
-    // to create a route the Host would refuse; the catalog form stands alone.
     expect(screen.queryByRole('textbox', { name: en.customRoute })).toBeNull()
     expect(screen.queryByRole('tablist')).toBeNull()
-    expect(screen.getByRole('combobox', { name: en.provider })).toBeTruthy()
+    expect(screen.queryByRole('combobox', { name: en.provider })).toBeNull()
   })
 
-  it('forgets the catalog target when the custom form closes, so a later refresh opens no row editor', async () => {
+  it('keeps newly configured routes closed after cancelling the custom form', async () => {
     const { face, controller, mirror } = await mountSection()
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: en.provider }).value).toBe('anthropic')
-    fireEvent.click(screen.getByRole('tab', { name: en.addCustom }))
-    fireEvent.click(within(screen.getByRole('tabpanel', { name: en.addCustom })).getByText(en.cancel))
+    const directory = await face.llm.listConfigurableProviders()
+    face.llm.listConfigurableProviders.mockResolvedValue(remoteOk(directory.value.map(entry => ({ ...entry, declared: true }))))
+    fireEvent.click(screen.getByRole('button', { name: en.addCustom }))
+    fireEvent.click(screen.getByText(en.cancel))
     expect(screen.queryByRole('tablist')).toBeNull()
     // The draft's provider gets configured elsewhere: its row must arrive closed.
     const withAnthropic = (layer: unknown): JsonValue => ({
@@ -1922,105 +1814,31 @@ describe('ModelsSection', () => {
     expect(screen.queryAllByLabelText(en.keyInput)).toHaveLength(0)
   })
 
-  it('locks the mode switch while the catalog form has a write in flight', async () => {
-    let settle: (() => void) | undefined
-    const pending = new Promise<void>((resolve) => { settle = resolve })
-    const providerNamespace = wireNamespaces().find(view => view.ns === 'llm-pi-ai')!
-    const mutate = vi.fn(() => pending.then(() => remoteOk(providerNamespace)))
-    await mountSection({ mutate })
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    fireEvent.change(screen.getByLabelText(en.keyInput), { target: { value: 'sk-slow' } })
-    fireEvent.click(screen.getByText(en.apply))
-    await waitFor(() => { expect(screen.getByRole<HTMLButtonElement>('tab', { name: en.addCustom }).disabled).toBe(true) })
-    expect(screen.getByRole<HTMLButtonElement>('tab', { name: en.addCatalog }).disabled).toBe(true)
-    await act(async () => { settle!(); await pending })
-    // The apply closes the card once it lands; nothing was switched underneath it.
-    await waitFor(() => { expect(screen.queryByRole('tablist')).toBeNull() })
-    expect(mutate).toHaveBeenCalledOnce()
-  })
-
-  it('locks the mode switch while the custom form is asking the endpoint for models', async () => {
-    const scripted = scriptedFace()
-    let settle: (() => void) | undefined
-    const pending = new Promise<void>((resolve) => { settle = resolve })
-    scripted.face.llm.discoverModels.mockImplementation(() => pending.then(() => remoteOk([])))
-    await mountFace(scripted)
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    fireEvent.click(screen.getByRole('tab', { name: en.addCustom }))
-    const custom = within(screen.getByRole('tabpanel', { name: en.addCustom }))
-    fireEvent.change(custom.getByRole('textbox', { name: en.baseUrl }), { target: { value: 'https://acme.test/v1' } })
-    fireEvent.click(custom.getByRole('button', { name: en.fetchModels }))
-    await waitFor(() => { expect(screen.getByRole<HTMLButtonElement>('tab', { name: en.addCatalog }).disabled).toBe(true) })
-    await act(async () => { settle!(); await pending })
-    await waitFor(() => { expect(screen.getByRole<HTMLButtonElement>('tab', { name: en.addCatalog }).disabled).toBe(false) })
-  })
-
-  it('pairs each tab with its panel through ids', async () => {
-    await mountSection()
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    const catalogTab = screen.getByRole('tab', { name: en.addCatalog })
-    const catalogPanel = screen.getByRole('tabpanel', { name: en.addCatalog })
-    expect(catalogTab.getAttribute('aria-controls')).toBe(catalogPanel.id)
-    expect(catalogPanel.getAttribute('aria-labelledby')).toBe(catalogTab.id)
-    fireEvent.click(screen.getByRole('tab', { name: en.addCustom }))
-    const customTab = screen.getByRole('tab', { name: en.addCustom })
-    const customPanel = screen.getByRole('tabpanel', { name: en.addCustom })
-    expect(customTab.getAttribute('aria-controls')).toBe(customPanel.id)
-    expect(customPanel.getAttribute('aria-labelledby')).toBe(customTab.id)
-  })
-
   it('titles a single-mode card with its mode instead of leaving an orphan tabpanel', async () => {
     const scripted = scriptedFace()
     scripted.face.llm.listConfigurableProviders.mockResolvedValue(remoteOk([]))
     await mountFace(scripted)
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
+    fireEvent.click(screen.getByRole('button', { name: en.addCustom }))
     expect(screen.queryByRole('tablist')).toBeNull()
     expect(screen.queryByRole('tabpanel')).toBeNull()
     expect(screen.getByText(en.addCustom)).toBeTruthy()
     expect(screen.getByRole('textbox', { name: en.customRoute })).toBeTruthy()
   })
 
-  it('explains a locked mode through its hover title', async () => {
-    const scripted = scriptedFace()
-    scripted.face.llm.listConfigurableProviders.mockResolvedValue(remoteOk([
-      { provider: 'openai', displayName: 'openai', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'openai'] },
-    ]))
-    await mountFace(scripted)
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    expect(screen.getByRole('tab', { name: en.addCatalog }).getAttribute('title')).toBe(en.addCatalogExhausted)
-    expect(screen.getByRole('tab', { name: en.addCustom }).getAttribute('title')).toBeNull()
-  })
-
-  it('explains a mode with no protocol to declare through its hover title', async () => {
-    const scripted = scriptedFace()
-    const protocolless = JSON.parse(JSON.stringify(
-      Schema.object({ providers: Schema.dict(Schema.object({})) }).toJSON(),
-    )) as JsonValue
-    scripted.face.settings.describe.mockResolvedValue(remoteOk({
-      writable: true, hasDocument: false,
-      namespaces: wireNamespaces().map(view => view.ns === 'llm-pi-ai' ? { ...view, schema: protocolless } : view),
-    }))
-    await mountFace(scripted)
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    expect(screen.getByRole('tab', { name: en.addCustom }).getAttribute('title')).toBe(en.addCustomUnavailable)
-    expect(screen.getByRole('tab', { name: en.addCatalog }).getAttribute('title')).toBeNull()
-  })
-
   it('collapses the add card from the custom mode on cancel', async () => {
     await mountSection()
-    fireEvent.click(screen.getByRole('button', { name: en.add }))
-    fireEvent.click(screen.getByRole('tab', { name: en.addCustom }))
-    fireEvent.click(within(screen.getByRole('tabpanel', { name: en.addCustom })).getByText(en.cancel))
+    fireEvent.click(screen.getByRole('button', { name: en.addCustom }))
+    fireEvent.click(screen.getByText(en.cancel))
     expect(screen.queryByRole('tablist')).toBeNull()
-    expect(screen.getByRole('button', { name: en.add })).toBeTruthy()
+    expect(screen.getByRole('button', { name: en.addCustom })).toBeTruthy()
   })
 
   it('cancels the add card back to the add button', async () => {
     await mountSection()
-    fireEvent.click(screen.getByText(en.add))
-    await screen.findByLabelText(en.provider)
+    fireEvent.click(screen.getByText(en.addCustom))
+    await screen.findByLabelText(en.customRoute)
     fireEvent.click(screen.getByText(en.cancel))
-    await screen.findByText(en.add)
+    await screen.findByText(en.addCustom)
     expect(screen.queryByLabelText(en.provider)).toBeNull()
   })
 
@@ -2029,14 +1847,14 @@ describe('ModelsSection', () => {
     // so cancelling it discarded the add card's draft while staying open itself.
     await mountFirstRun()
     expect(screen.getAllByLabelText(en.keyInput)).toHaveLength(1)
-    fireEvent.click(screen.getByText(en.add))
-    await screen.findByLabelText(en.provider)
+    fireEvent.click(screen.getByText(en.addCustom))
+    await screen.findByLabelText(en.customRoute)
     expect(screen.getAllByLabelText(en.keyInput)).toHaveLength(2)
 
     // The setup card is the first one on the page, above the add block.
     fireEvent.click(screen.getAllByText(en.cancel)[0] as HTMLElement)
     // The add card kept its draft…
-    expect(screen.getByLabelText(en.provider)).toBeTruthy()
+    expect(screen.getByLabelText(en.customRoute)).toBeTruthy()
     // …and DeepSeek collapsed to an ordinary row carrying the missing-key dot.
     expect(screen.getAllByLabelText(en.keyInput)).toHaveLength(1)
     expect(screen.getAllByRole('img', { name: en.credentialMissing })
@@ -2115,7 +1933,7 @@ describe('ModelsSection', () => {
 
   it('retains credentials that are not identified as page-managed', async () => {
     const { unset, mutate } = await mountSection()
-    const target = { provider: 'zombie', displayName: 'zombie' }
+    const target = { provider: 'zombie', declared: true, displayName: 'zombie' }
     fireEvent.click(screen.getByRole('button', { name: providerCopy(en.removeProvider, target) }))
     const dialog = screen.getByRole('dialog', { name: providerCopy(en.deleteTitle, target) })
     expect(dialog.textContent).toContain(providerCopy(en.deleteDescription, target))

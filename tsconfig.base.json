@@ -28,6 +28,15 @@
     // not declaration path aliases, keep each package/vendor source compiled
     // under its own tsconfig boundary.
     "paths": {
+      "@deepseek-ai/dsh-unionpay-connection/types": ["./packages/credentials/unionpay-connection/src/types.ts"],
+      "@deepseek-ai/dsh-llm-unionpay/types": ["./packages/llm/llm-unionpay/src/types.ts"],
+      "@deepseek-ai/dsh-unionpay-usage/types": ["./packages/telemetry/unionpay-usage/src/types.ts"],
+      "@deepseek-ai/dsh-client-ui-unionpay": ["./packages/client/ui-unionpay/src/index.ts"],
+      "@deepseek-ai/dsh-client-ui-unionpay/client": ["./packages/client/ui-unionpay/src/client/index.ts"],
+      "@deepseek-ai/dsh-llm-unionpay": ["./packages/llm/llm-unionpay/src"],
+      "@deepseek-ai/dsh-unionpay-bundle": ["./packages/bundle/unionpay-bundle/src"],
+      "@deepseek-ai/dsh-unionpay-connection": ["./packages/credentials/unionpay-connection/src"],
+      "@deepseek-ai/dsh-unionpay-usage": ["./packages/telemetry/unionpay-usage/src"],
       "@deepseek-ai/dsh-client-ui-entry-customization": ["./packages/client/ui-entry-customization/src/index.ts"],
       "@deepseek-ai/dsh-client-ui-entry-customization/client": ["./packages/client/ui-entry-customization/src/client/index.ts"],
       "@deepseek-ai/dsh-client-ui-entry-customization/src/*": ["./packages/client/ui-entry-customization/src/*"],

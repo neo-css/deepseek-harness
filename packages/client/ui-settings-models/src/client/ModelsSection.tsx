@@ -241,10 +241,15 @@ export function ModelsSection(props: ModelsSectionProps): ReactNode {
     controller === undefined || useSnapshot === undefined || operations === undefined
     || schema === undefined || t === undefined
   ) return null
-  return <Loaded injected={{ controller, useSnapshot, operations, schema, t }} renderSlot={renderSlot} />
+  return <Loaded injected={{ controller, useSnapshot, operations, schema, t }} customOnly
+    renderSlot={renderSlot} />
 }
 
-function Loaded({ injected, renderSlot }: { injected: ModelsSectionFace; renderSlot: ModelsRenderSlot }): ReactNode {
+function Loaded({ injected, renderSlot, customOnly }: {
+  injected: ModelsSectionFace
+  renderSlot: ModelsRenderSlot
+  customOnly: boolean
+}): ReactNode {
   const { controller, operations, schema, t } = injected
   const snapshot = injected.useSnapshot(value => value)
   const state = { ...snapshot, rows: snapshot.rows.map(row => row.entry.provider === 'deepseek-account'
@@ -365,7 +370,7 @@ function Loaded({ injected, renderSlot }: { injected: ModelsSectionFace; renderS
   // One fact decides both first-run postures on this page and the onboarding
   // step: whether the user already has a provider to talk to.
   const anyUsable = state.rows.some(providerUsable)
-  const configured = state.rows.filter(row => row.configured)
+  const configured = state.rows.filter(row => row.configured && (!customOnly || row.entry.declared === true))
   const configurable = state.rows.filter(row => state.namespaces.has(row.entry.settingsNs))
   const addable: AddableRow[] = state.rows.flatMap((row) => {
     const namespace = state.namespaces.get(row.entry.settingsNs)
@@ -383,12 +388,12 @@ function Loaded({ injected, renderSlot }: { injected: ModelsSectionFace; renderS
   // the shown mode or has been shown since the card opened — derived, so a
   // refresh that changes which modes are offered can never leave the card
   // without a panel.
-  const catalogOffered = configurable.length > 0
-  const catalogEnabled = addable.length > 0
+  const catalogOffered = !customOnly && configurable.length > 0
+  const catalogEnabled = catalogOffered && addable.length > 0
   const customOffered = piAi !== undefined
   const customEnabled = protocols.length > 0
   const bothOffered = catalogOffered && customOffered
-  const mode: AddMode = bothOffered ? addMode : customOffered ? 'custom' : 'catalog'
+  const mode: AddMode = bothOffered ? addMode : customOnly || customOffered ? 'custom' : 'catalog'
   const mounted = (candidate: AddMode): boolean => mode === candidate || visited.has(candidate)
   const switchLocked = catalogBusy || customBusy
   // The catalog draft: the row the user chose, kept through a refresh that
@@ -413,7 +418,7 @@ function Loaded({ injected, renderSlot }: { injected: ModelsSectionFace; renderS
   return (
     <div className={styles['section']}>
       <h2 className={styles['title']}>{t('title')}</h2>
-      <p className={styles['intro']}>{t('intro')}</p>
+      <p className={styles['intro']}>{t(customOnly ? 'addCustomHint' : 'intro')}</p>
       {!state.writable && state.status === 'ready' ? <p className={styles['notice']}>{t('readOnly')}</p> : null}
       {savedIdentity === undefined
         ? null
@@ -604,9 +609,9 @@ function Loaded({ injected, renderSlot }: { injected: ModelsSectionFace; renderS
                       <span className={styles['editorTitle']}>{t(mode === 'catalog' ? 'addCatalog' : 'addCustom')}</span>
                     </div>
                   )}
-                <p className={styles['advancedHint']}>
+                {!customOnly && <p className={styles['advancedHint']}>
                   {t(mode === 'catalog' ? 'addCatalogHint' : 'addCustomHint')}
-                </p>
+                </p>}
               </div>
               {mounted('catalog') && draft !== undefined
                 ? (
@@ -711,7 +716,7 @@ function Loaded({ injected, renderSlot }: { injected: ModelsSectionFace; renderS
                   }}
                 >
                   <IconPlusOutlineRegular size={14} />
-                  {t('add')}
+                  {t(customOnly ? 'addCustom' : 'add')}
                 </button>
               </div>
             )

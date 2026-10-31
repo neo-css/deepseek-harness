@@ -1,0 +1,25 @@
+.launcher { display: flex; align-items: center; flex: 1; min-width: 0; gap: 4px; }
+.account, .settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border: 0;
+  border-radius: var(--dsw-radius-md);
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.account { flex: 1; min-width: 0; justify-content: flex-start; gap: 8px; padding: 6px var(--dsh-sidebar-row-padding); }
+.account svg, .settings svg { flex: none; }
+.settings { flex: none; width: 36px; padding: 0; }
+.label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.launcher[data-collapsed='true'] { flex-direction: column; }
+.launcher[data-collapsed='true'] .account { flex: none; width: 36px; padding: 0; justify-content: center; }
+.dialog { width: min(620px, 100%); max-height: 100%; }
+.content { min-height: 0; overflow-y: auto; scrollbar-gutter: stable; }
+@media (hover: hover) {
+  .account:hover, .settings:hover { background: var(--dsw-alias-interactive-bg-hover); }
+}

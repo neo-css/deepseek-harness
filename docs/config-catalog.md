@@ -609,7 +609,7 @@ export type OnboardingProcess = 'compact' | 'standard' | 'detailed'
 - `source`: [`packages/client/ui-settings-models/src/onboarding-config.ts:6`](../packages/client/ui-settings-models/src/onboarding-config.ts)
 
 ```ts config-catalog
-/** Onboarding options after schema defaults are applied. */
+/** Model settings and onboarding options after schema defaults are applied. */
 export interface Config {
   /** Offer the browser API-key step when no native shell owns credential onboarding. */
   credentialOnboarding: boolean
@@ -2129,6 +2129,33 @@ export interface ReplayModelConfig {
 export type Config = Readonly<Record<string, never>>
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-llm-retry -->
+
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-llm-unionpay -->
+<a id="deepseek-aidsh-llm-unionpay"></a>
+
+## `@deepseek-ai/dsh-llm-unionpay`
+
+- `inject`: `llm` · `unionpayConnection`
+- `source`: [`packages/llm/llm-unionpay/src/types.ts:40`](../packages/llm/llm-unionpay/src/types.ts)
+
+```ts config-catalog
+/** Deployment controls of the managed-model adapter. */
+export interface Config {
+  /** Maximum idle time between upstream stream chunks. */
+  streamIdleTimeoutMs: number
+  /** Maximum total pixels in each image request version. */
+  requestImagePixelBudget: number
+  /** Maximum raw bytes in each image request version. */
+  requestImageMaxBytes: number
+  /** Maximum aggregate encoded image bytes per request. */
+  maxRequestImageBytes: number
+  /** Additional attempts allowed for transient model failures. */
+  maxRetries: number
+  /** Maximum buffered SSE event characters while extracting provider usage. */
+  maxUsageEventChars: number
+}
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-llm-unionpay -->
 
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-lsp-stdio -->
 <a id="deepseek-aidsh-lsp-stdio"></a>
@@ -4258,6 +4285,61 @@ export interface Config {
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-typert-loader -->
 
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-unionpay-connection -->
+<a id="deepseek-aidsh-unionpay-connection"></a>
+
+## `@deepseek-ai/dsh-unionpay-connection`
+
+- `inject`: `credentials` · `authorization`
+- `refs`: `Volatile` (`@deepseek-ai/cordis`)
+- `source`: [`packages/credentials/unionpay-connection/src/config.ts:6`](../packages/credentials/unionpay-connection/src/config.ts)
+
+```ts config-catalog
+/** An empty origin leaves the plugin available for configuration without starting network activity. */
+export interface Config {
+  /** Enterprise HTTP(S) origin; empty means not configured. */
+  origin: Volatile<string>
+  /** Deadline for one enterprise API request, including its body. */
+  requestTimeoutMs: number
+  /** Maximum bytes accepted in one enterprise JSON response. */
+  maxResponseBytes: number
+  /** Interval between authenticated catalog and membership refreshes. */
+  refreshIntervalMs: number
+  /** Renew inference grants this long before their expiry. */
+  renewBeforeMs: number
+  /** Maximum local lifetime of a browser sign-in attempt. */
+  signInTimeoutMs: number
+}
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-unionpay-connection -->
+
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-unionpay-usage -->
+<a id="deepseek-aidsh-unionpay-usage"></a>
+
+## `@deepseek-ai/dsh-unionpay-usage`
+
+- `inject`: `llm` · `unionpayConnection` · `unionpayModels` · `storageDomain`
+- `source`: [`packages/telemetry/unionpay-usage/src/types.ts:51`](../packages/telemetry/unionpay-usage/src/types.ts)
+
+```ts config-catalog
+/** Deployment choices for collection and durable delivery. */
+export interface Config {
+  /** Include personal model calls as BYOK by default; false collects only enterprise calls. */
+  includePersonalModels: boolean
+  /** Product carrier accepted by the enterprise API; a Web Host uses cli. */
+  app: 'desktop' | 'cli'
+  /** Delay between attempts to send queued reports. */
+  flushIntervalMs: number
+  /** Interval for observing an administrator's collection switch. */
+  collectionRefreshMs: number
+  /** Maximum completed calls retained in the local outbox. */
+  maxQueueRecords: number
+  /** Maximum reports sent in one delivery batch; the server accepts at most 50. */
+  batchSize: number
+}
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-unionpay-usage -->
+
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-user-approval -->
 <a id="deepseek-aidsh-user-approval"></a>
 
@@ -4638,6 +4720,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 | `@deepseek-ai/dsh-client-ui-subagent` | — | [`packages/client/ui-subagent/src/index.ts`](../packages/client/ui-subagent/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-tool` | — | [`packages/client/ui-tool/src/index.ts`](../packages/client/ui-tool/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-trajectory` | — | [`packages/client/ui-trajectory/src/index.ts`](../packages/client/ui-trajectory/src/index.ts) |
+| `@deepseek-ai/dsh-client-ui-unionpay` | — | [`packages/client/ui-unionpay/src/index.ts`](../packages/client/ui-unionpay/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-user-questions` | — | [`packages/client/ui-user-questions/src/index.ts`](../packages/client/ui-user-questions/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-workflow-run` | — | [`packages/client/ui-workflow-run/src/index.ts`](../packages/client/ui-workflow-run/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-workspace` | — | [`packages/client/ui-workspace/src/index.ts`](../packages/client/ui-workspace/src/index.ts) |
@@ -4783,6 +4866,7 @@ Imported as libraries by other packages; a `cordis.yml` cannot load them.
 | `@deepseek-ai/dsh-typert-generator` | — | [`packages/typert/generator/src/index.ts`](../packages/typert/generator/src/index.ts) |
 | `@deepseek-ai/dsh-typert-protocol` | — | [`packages/typert/protocol/src/index.ts`](../packages/typert/protocol/src/index.ts) |
 | `@deepseek-ai/dsh-typert-registry` | — | [`packages/typert/registry/src/index.ts`](../packages/typert/registry/src/index.ts) |
+| `@deepseek-ai/dsh-unionpay-bundle` | — | [`packages/bundle/unionpay-bundle/src/index.ts`](../packages/bundle/unionpay-bundle/src/index.ts) |
 | `@deepseek-ai/dsh-util-code-language` | — | [`packages/util/code-language/src/index.ts`](../packages/util/code-language/src/index.ts) |
 | `@deepseek-ai/dsh-util-crypto` | — | [`packages/util/crypto/src/index.ts`](../packages/util/crypto/src/index.ts) |
 | `@deepseek-ai/dsh-util-time` | — | [`packages/util/time/src/index.ts`](../packages/util/time/src/index.ts) |

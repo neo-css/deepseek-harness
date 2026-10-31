@@ -176,6 +176,35 @@ abstract shutdown(): Promise<void>
 
 Source: [`packages/session/session-telemetry/src/index.ts`](../../packages/session/session-telemetry/src/index.ts)
 
+<a id="ctxunionpayusage--unionpayusage"></a>
+
+### `ctx.unionpayUsage` — `UnionPayUsage`
+
+Collection is optional and never changes a model call's result when reporting fails.
+
+```ts cordis-catalog
+/**
+ * Read delivery state without starting a network operation.
+ * @returns the persisted pending count and latest delivery outcome.
+ */
+@Remote getState(): UsageDeliveryView
+
+/**
+ * Retry one bounded batch, retaining it unless the server acknowledges every row.
+ * @returns delivery state, including opt-out, identity wait, or a sanitized failure.
+ */
+@Remote flush(): Promise<UsageDeliveryView>
+
+/**
+ * Follow complete delivery states while the caller is connected.
+ * @param signal - observation lifetime.
+ * @returns initial and subsequent queue states; reports and identities are not exposed.
+ */
+@Remote({ mode: 'stream' }) async *follow(signal: AbortSignal): AsyncIterable<UsageDeliveryView>
+```
+
+Source: [`packages/telemetry/unionpay-usage/src/index.ts`](../../packages/telemetry/unionpay-usage/src/index.ts)
+
 <a id="session-telemetry-events"></a>
 
 ### `session-telemetry/*` events

@@ -1,0 +1,46 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/llm/llm-unionpay/README.md
+/:
+  en: e8add7d25e74f438
+  zh: 5e866af6862a27bb
+/deepseek-ai-dsh-llm-unionpay:
+  en: b3283cf00ad8d30a
+  zh: c6d747c65ad1da40
+/deepseek-ai-dsh-llm-unionpay/summary:
+  en: a6c854b620ccc403
+  zh: 64fba42bdba08dd9
+/deepseek-ai-dsh-llm-unionpay/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 5b6bd00fce5371c3
+/deepseek-ai-dsh-llm-unionpay/use-this-package:
+  en: 38da131ed790b04c
+  zh: 197358cfe7f7d7a5
+/deepseek-ai-dsh-llm-unionpay/understand-the-implementation:
+  en: 291491290c9745d7
+  zh: 9f5007be86337962
+/deepseek-ai-dsh-llm-unionpay/further-exploration:
+  en: ab2cfa45d56329f3
+  zh: bec7f3217c7c6c4f
+/deepseek-ai-dsh-llm-unionpay/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-llm-unionpay/model-experience/enterprise-model-request:
+  en: 503853c23ad1a4bf
+  zh: 957912a9d8236e0e
+/deepseek-ai-dsh-llm-unionpay/model-experience/enterprise-model-request/what-the-model-sees:
+  en: 893811a526b27b40
+  zh: cd14455af6ac5238
+/deepseek-ai-dsh-llm-unionpay/model-experience/enterprise-model-request/token-effect:
+  en: 0d2e3152d42e402b
+  zh: 6c38f69396dd19e5
+/deepseek-ai-dsh-llm-unionpay/model-experience/enterprise-model-request/kv-cache-effect:
+  en: 4795dc5b800d7039
+  zh: 0cd20809eb649340
+/deepseek-ai-dsh-llm-unionpay/known-limitations-and-deferred-work:
+  en: e57e16e0151c84f3
+  zh: a96d907c729b382e
+/deepseek-ai-dsh-llm-unionpay/known-limitations-and-deferred-work/dev-note:
+  en: 0a1253c6f7b5e8b9
+  zh: 9f56528562c7c914

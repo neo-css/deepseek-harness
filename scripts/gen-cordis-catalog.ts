@@ -149,6 +149,9 @@ export const SERVICE_PAGE: Record<string, string> = {
   workspaceChanges: 'deliverables.md',
   terminalController: 'workspace.md',
   directoryPickerController: 'workspace.md',
+  unionpayConnection: 'credentials.md',
+  unionpayModels: 'llm-streaming.md',
+  unionpayUsage: 'session-telemetry.md',
 }
 
 /**
@@ -248,6 +251,8 @@ export const EVENT_SCOPE_PAGE: Record<string, string> = {
   'system-prompt': 'system-prompt.md',
   'session-telemetry': 'session-telemetry.md',
   'feedback': 'feedback.md',
+  unionpay: 'credentials.md',
+  'unionpay-model': 'llm-streaming.md',
   'tools': 'tools.md',
   'user-questions': 'user-questions.md',
   'webserver': 'web-server.md',
@@ -983,6 +988,15 @@ export const TYPE_LINK_EXEMPTIONS: Readonly<Record<string, string>> = {
   TerminalFrame: 'Browser terminal stream frames are owned by packages/api/terminal-controller/README.md',
   TerminalRetentionFrame: 'Browser terminal window holds are owned by packages/api/terminal-controller/README.md',
   WebTerminalId: 'Browser terminal identity is owned by packages/api/terminal-controller/README.md',
+  ManagedModelCall: 'managed UnionPay model call accounting is owned by packages/llm/llm-unionpay/README.md',
+  EnterpriseConnectionView: 'UnionPay connection display state is owned by packages/credentials/unionpay-connection/README.md',
+  EnterpriseModel: 'UnionPay managed model metadata is owned by packages/credentials/unionpay-connection/README.md',
+  EnterpriseSignInId: 'UnionPay sign-in attempt identity is owned by packages/credentials/unionpay-connection/README.md',
+  EnterpriseRuntime: 'UnionPay runtime grant is owned by packages/credentials/unionpay-connection/README.md',
+  EnterpriseUsageOwner: 'UnionPay usage ownership is owned by packages/credentials/unionpay-connection/README.md',
+  EnterpriseClientId: 'UnionPay collection client identity is owned by packages/credentials/unionpay-connection/README.md',
+  EnterpriseUsageDelivery: 'UnionPay usage delivery result is owned by packages/credentials/unionpay-connection/README.md',
+  UsageDeliveryView: 'UnionPay usage delivery state is owned by packages/telemetry/unionpay-usage/README.md',
 }
 
 /** Repository data policy consumed by the Cordis catalog projector. */

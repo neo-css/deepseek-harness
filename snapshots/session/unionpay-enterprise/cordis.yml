@@ -1,0 +1,25 @@
+# The external enterprise gateway replays the committed response over HTTP.
+- id: llm-deepseek
+  disabled: true
+- id: plugin-package-inventory-deepseek
+  disabled: true
+- id: credentials
+  disabled: false
+- id: authorization
+  disabled: false
+- id: headless-runner
+  inject: [headlessStartup, unionpayFixtureReady]
+- insert:
+    - id: unionpay-fixture
+      name: ./gateway.mjs
+    - id: unionpay-connection
+      name: '@deepseek-ai/dsh-unionpay-connection'
+      inject: [unionpayFixture]
+      config:
+        origin: !!js ctx.unionpayFixture.origin
+    - id: llm-unionpay
+      name: '@deepseek-ai/dsh-llm-unionpay'
+    - id: unionpay-usage
+      name: '@deepseek-ai/dsh-unionpay-usage'
+    - id: unionpay-fixture-ready
+      name: ./sign-in.mjs

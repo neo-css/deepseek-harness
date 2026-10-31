@@ -9,6 +9,7 @@ import type { SettingsNamespaceView } from '@deepseek-ai/dsh-api-remotes/client'
 import type { JsonValue } from '@deepseek-ai/dsh-util-values'
 import { ModelsSection, providerCopy } from '../src/client/ModelsSection.tsx'
 import type { ModelsSectionInjected, ModelsSectionProps } from '../src/client/ModelsSection.tsx'
+import { ProviderEditor } from '../src/client/ProviderEditor.tsx'
 import { CustomProviderCard } from '../src/client/CustomProviderCard.tsx'
 import { formatCapacity, parseCapacity } from '../src/client/DeepSeekModelsEditor.tsx'
 import { SettingsDescribeMirror } from '@deepseek-ai/dsh-client-ui-settings/src/client/settings-mirror.ts'
@@ -128,7 +129,7 @@ function scriptedFace(options: {
           displayName: provider,
           settingsNs: 'llm-pi-ai',
           settingsPath: ['providers', provider],
-          declared: options.declaredRoutes?.includes(provider) ?? false,
+          declared: options.declaredRoutes?.includes(provider) ?? true,
         })),
       ))),
       discoverModels: discover,
@@ -223,6 +224,16 @@ async function mountSection(options: Parameters<typeof scriptedFace>[0] = {}) {
   return { ...scripted, controller }
 }
 
+/** Exercise the shared editor independently of the custom-only page filter. */
+function mountEditor(provider: string, options: Parameters<typeof scriptedFace>[0] = {}, declared = false) {
+  const scripted = scriptedFace(options)
+  const view = render(<ProviderEditor provider={provider} displayName={provider} declared={declared}
+    namespace={scripted.namespace} settingsPath={['providers', provider]} schema={settingsSchema}
+    operations={operationsWith(scripted.face)} t={t} readOnly={false} onClose={() => { view.unmount() }} />)
+  fireEvent.click(screen.getByText(en.customized))
+  return scripted
+}
+
 /** Open the editor of one configured row and expand its customized fold. */
 function openEditor(provider: string): void {
   const row = screen.getByText(provider).closest('li')
@@ -233,10 +244,9 @@ function openEditor(provider: string): void {
   fireEvent.click(summary)
 }
 
-/** Open the add card from the section and switch it to the custom-API mode. */
+/** Open the custom API creation form from the section. */
 function openCustomMode(): void {
-  fireEvent.click(screen.getByRole('button', { name: en.add }))
-  fireEvent.click(screen.getByRole('tab', { name: en.addCustom }))
+  fireEvent.click(screen.getByRole('button', { name: en.addCustom }))
 }
 
 /** Open one model row's advanced fold, where the capacities live. */
@@ -541,8 +551,7 @@ describe('endpoint interrogation', () => {
       { id: 'vision', inputModalities: ['text', 'image'] },
     ])))
     const model = { id: 'vision', ...input === undefined ? {} : { input } }
-    const { mutate } = await mountSection({ discover, providers: { openai: { models: [model] } } })
-    openEditor('openai')
+    const { mutate } = mountEditor('openai', { discover, providers: { openai: { models: [model] } } })
     expandModel(1)
     const types = within(screen.getByRole('group', { name: `${en.modelInputTypes} 1` }))
     await waitFor(() => { expect(types.getByRole<HTMLInputElement>('checkbox', { name: en.modelInputImage }).disabled).toBe(false) })
@@ -815,7 +824,7 @@ describe('endpoint interrogation', () => {
 })
 
 describe('provider rows', () => {
-  it('tags the routes the adapter declared, and only those', async () => {
+  it('shows and tags only routes the adapter declares as custom', async () => {
     await mountSection({
       providers: {
         openai: { apiKeyEnv: 'OPENAI_API_KEY' },
@@ -830,12 +839,10 @@ describe('provider rows', () => {
       return row
     }
     expect(rowOf('acme-gateway').textContent).toContain(en.customTag)
-    // `openai` carries a stored profile too — the tag follows the adapter's
-    // catalog, not the presence of settings, so it stays off here.
-    expect(rowOf('openai').textContent).not.toContain(en.customTag)
+    expect(screen.queryByText('openai')).toBeNull()
   })
 
-  it('shows no tag when the adapter draws no catalog distinction', async () => {
+  it('hides routes without an explicit custom declaration', async () => {
     const scripted = scriptedFace({ providers: { openai: { apiKeyEnv: 'OPENAI_API_KEY' } } })
     scripted.face.llm.listConfigurableProviders = vi.fn(() => Promise.resolve(ok([{
       provider: 'openai',
@@ -855,8 +862,7 @@ describe('provider rows', () => {
       renderSlot={() => null}
     />)
 
-    // Absent is "unknown", never "shipped": an adapter that answers nothing
-    // must not have its routes labelled either way.
+    expect(screen.queryByText('openai')).toBeNull()
     expect(screen.queryByText(en.customTag)).toBeNull()
   })
 })
@@ -949,9 +955,7 @@ describe('hand-declared providers', () => {
 
     // A shipped route's models each carry their own protocol, so its editor
     // offers no route-level protocol to override them with.
-    await mountSection({ providers: { openai: { apiKeyEnv: 'OPENAI_API_KEY' } } })
-    openEditor('openai')
-    fireEvent.click(screen.getByText(en.customized))
+    mountEditor('openai', { providers: { openai: { apiKeyEnv: 'OPENAI_API_KEY' } } })
     expect(fields()).toEqual([en.keyInput, en.baseUrl])
     cleanup()
 
@@ -1098,16 +1102,14 @@ describe('hand-declared providers', () => {
   ])('%s whose stored reasoning levels the adapter refuses', async (_label, declared) => {
     // Only a hand-declared route's rows edit reasoning levels, so only there
     // can the card name the row and offer the switch that repairs it.
-    await mountSection({
+    mountEditor('acme-gateway', {
       providers: {
         'acme-gateway': {
           api: 'openai-completions',
           models: [{ id: 'acme-large', reasoningEfforts: { off: null } }],
         },
       },
-      declaredRoutes: declared ? ['acme-gateway'] : [],
-    })
-    openEditor('acme-gateway')
+    }, declared)
 
     const refusal = `${en.model} 1: ${en.modelReasoningNeedsLevel}`
     expect(screen.queryByText(refusal) !== null).toBe(declared)
@@ -1514,7 +1516,7 @@ describe('hand-declared providers', () => {
 
     fireEvent.click(screen.getByText(en.cancel))
     await waitFor(() => { expect(screen.queryByRole('textbox', { name: en.customRoute })).toBeNull() })
-    expect(screen.getByRole('button', { name: en.add })).toBeTruthy()
+    expect(screen.getByRole('button', { name: en.addCustom })).toBeTruthy()
   })
 
   it('names each protocol by its product name and falls back to the identifier of an unknown one', () => {
@@ -1679,7 +1681,7 @@ describe('API key field', () => {
     // a round trip to be told what the field already says.
     expect(buttonNamed(en.fetchModels).disabled).toBe(true)
     expect(buttonNamed(en.fetchModels).title).toBe(en.keyIllegalCharacters)
-    expect(discover).toHaveBeenCalledExactlyOnceWith('llm-pi-ai', { provider: 'openai' })
+    expect(discover).not.toHaveBeenCalled()
   })
 
   it('carries the trimmed key into an interrogation, not the padded draft', async () => {

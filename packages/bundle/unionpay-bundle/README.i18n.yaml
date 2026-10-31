@@ -1,0 +1,46 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/bundle/unionpay-bundle/README.md
+/:
+  en: 4b4344818f92a050
+  zh: 3902050b0efdee6d
+/deepseek-ai-dsh-unionpay-bundle:
+  en: e04149a64f332d8b
+  zh: ef4f0ab7e6c7144c
+/deepseek-ai-dsh-unionpay-bundle/summary:
+  en: 4963e2022a20112e
+  zh: c0908f187b1649ea
+/deepseek-ai-dsh-unionpay-bundle/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 8dac3b9ec5025ff9
+/deepseek-ai-dsh-unionpay-bundle/use-this-package:
+  en: bbff250eba0f1b89
+  zh: b20a47f82d8ab6e0
+/deepseek-ai-dsh-unionpay-bundle/use-this-package/install-from-this-checkout:
+  en: 50ccd36739da0cd0
+  zh: b40f3e608219e4f3
+/deepseek-ai-dsh-unionpay-bundle/use-this-package/connect-and-run-a-task:
+  en: 5a4fda95485281d2
+  zh: 9d38ca021f1b7846
+/deepseek-ai-dsh-unionpay-bundle/use-this-package/configure-deployment-limits:
+  en: 5c642f1e10f55114
+  zh: 42eebf95f1a65ea5
+/deepseek-ai-dsh-unionpay-bundle/understand-the-implementation:
+  en: b06c5af1306c8ef6
+  zh: 285987e84444db26
+/deepseek-ai-dsh-unionpay-bundle/further-exploration:
+  en: 3260cbc0530a3450
+  zh: 6bf443cad50216f2
+/deepseek-ai-dsh-unionpay-bundle/model-experience:
+  en: 3d8d9a3505fccc00
+  zh: 71678333adb55a48
+/deepseek-ai-dsh-unionpay-bundle/model-experience/kv-cache-effect:
+  en: c240813daa33d929
+  zh: 8683dfe7eeb33d79
+/deepseek-ai-dsh-unionpay-bundle/known-limitations-and-deferred-work:
+  en: d948615add0fe109
+  zh: 812618980b995706
+/deepseek-ai-dsh-unionpay-bundle/known-limitations-and-deferred-work/dev-note:
+  en: 0a1253c6f7b5e8b9
+  zh: 9f56528562c7c914
