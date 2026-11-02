@@ -124,7 +124,7 @@ export class EnterprisePageController {
       const attempt = result.value.signIn
       if (attempt?.status !== 'pending' || !attempt.verificationUrl) return false
       if (desktop || popup.window === null) window.open(attempt.verificationUrl, '_blank', 'noopener,noreferrer')
-      else if (popup.window && !popup.window.closed) {
+      else if (!popup.window.closed) {
         popup.window.location.replace(attempt.verificationUrl)
         popup.navigated = true
       }
