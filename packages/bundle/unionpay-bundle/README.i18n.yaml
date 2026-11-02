@@ -21,8 +21,11 @@
   en: 50ccd36739da0cd0
   zh: b40f3e608219e4f3
 /deepseek-ai-dsh-unionpay-bundle/use-this-package/connect-and-run-a-task:
-  en: 5a4fda95485281d2
-  zh: 9d38ca021f1b7846
+  en: d5b8fbdad13222b7
+  zh: caec8f6ac2f36078
+/deepseek-ai-dsh-unionpay-bundle/use-this-package/distribution-defaults:
+  en: 24efbdef059687b6
+  zh: 2cd383c7d48c6a32
 /deepseek-ai-dsh-unionpay-bundle/use-this-package/configure-deployment-limits:
   en: 5c642f1e10f55114
   zh: 42eebf95f1a65ea5
@@ -33,11 +36,11 @@
   en: 3260cbc0530a3450
   zh: 6bf443cad50216f2
 /deepseek-ai-dsh-unionpay-bundle/model-experience:
-  en: 3d8d9a3505fccc00
-  zh: 71678333adb55a48
+  en: 75a45fcdb5dfe10c
+  zh: 3ad29edbc20c429a
 /deepseek-ai-dsh-unionpay-bundle/model-experience/kv-cache-effect:
-  en: c240813daa33d929
-  zh: 8683dfe7eeb33d79
+  en: 6cc35e6991e1da5a
+  zh: 12917bbc0dd6daca
 /deepseek-ai-dsh-unionpay-bundle/known-limitations-and-deferred-work:
   en: d948615add0fe109
   zh: 812618980b995706

@@ -46,6 +46,26 @@ The connection page can refresh authorization, retry delivery, or sign out. Sign
 
 Models settings shows only custom APIs; built-in provider cards and the provider catalog are hidden. Personal model APIs remain available under **Settings → Models → Custom model API** and can be selected alongside enterprise models. Personal-provider usage is reported as `byok` by default when management collection is enabled; see the [usage configuration](../../telemetry/unionpay-usage/README.md#use-this-package) to disable personal-model collection.
 
+<a id="distribution-defaults"></a>
+### Distribution defaults
+
+Enterprise Web and desktop distributions load this bundle after `@deepseek-ai/dsh-base` and `@deepseek-ai/dsh-web-app`. Its packaged patch files disable these integrations by default on macOS, Linux, and Windows; a fresh profile needs no local disable overrides:
+
+| Integration | Entry ID |
+|---|---|
+| DeepSeek plugin inventory reporting | `plugin-package-inventory-deepseek` |
+| OpenTelemetry reporting service | `otel` |
+| Feedback session-log upload | `session-telemetry-otel` |
+| Session feedback command | `command-feedback` |
+| Web access service | `web` |
+| DeepSeek web search | `web-search-deepseek` |
+| DeepSeek Search and Fetch APIs | `web-deepseek-api` |
+| Public webpage fetching | `web-fetch-http` |
+| Web search and reading tools | `tool-web` |
+| DeepSeek API-key access | `llm-deepseek` |
+
+The standard, PTC, and creator presets also disable their web tools, so they load without the web service. The minimal preset has no web tools. Shell tools remain available for direct intranet HTTP requests where the execution environment permits them. Enterprise sign-in, managed models, usage reporting, and custom model APIs remain available. The management service origin defaults to empty and must be configured for the deployment.
+
 ### Configure deployment limits
 
 The bundle inserts rows named `unionpay-connection`, `llm-unionpay`, `unionpay-usage`, and `ui-unionpay`. Configure their documented fields in the profile's `cordis.patch.yml`. The [connection](../../credentials/unionpay-connection/README.md), [model](../../llm/llm-unionpay/README.md), and [usage](../../telemetry/unionpay-usage/README.md) packages own their defaults and failure behavior.
@@ -77,11 +97,11 @@ The bundle inserts rows named `unionpay-connection`, `llm-unionpay`, `unionpay-u
 <a id="model-experience"></a>
 ## Model Experience
 
-Indirectly, through the [managed-model plugin](../../llm/llm-unionpay/README.md#model-experience), which owns protocol conversion without adding enterprise prompts.
+Indirectly, through the [managed-model plugin](../../llm/llm-unionpay/README.md#model-experience) and the selected preset's tools. Enterprise profiles omit `web_search` and `web_fetch` from model requests; the managed-model plugin owns protocol conversion.
 
 #### KV Cache effect
 
-The bundle itself does not change request history or cache prefixes.
+The disabled web tools are absent from request schemas. Each remaining plugin owns its request-history and cache effects.
 
 ## Known Limitations and Deferred Work
 <a id="known-limitations-and-deferred-work"></a>

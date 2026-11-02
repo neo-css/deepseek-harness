@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for guide.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.1-rc.5/unionpay-distribution-defaults/guide.md
+/:
+  en: c2672ed8f97f3b60
+  zh: 67eefe63c46394e3
+/unionpay-distribution-defaults:
+  en: 59e6c66eba073d6f
+  zh: 0f3068c932791017
+/unionpay-distribution-defaults/change:
+  en: 081fcfc08a3262f6
+  zh: 8581255b0cf1c1ff
+/unionpay-distribution-defaults/migration:
+  en: 20620224d3bf2389
+  zh: 32635c397d987f6a

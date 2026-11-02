@@ -46,6 +46,26 @@ pnpm dsh web --no-open
 
 模型设置仅显示自定义 API，隐藏内置提供商卡片和提供商目录。个人模型 API 仍可在 **设置 → 模型 → 自定义模型 API** 中配置，并与企业模型一起选择使用。管理端开启采集时，个人供应商用量默认以 `byok` 上报；关闭个人模型采集的方法见[用量配置](../../telemetry/unionpay-usage/README.zh.md#use-this-package)。
 
+<a id="distribution-defaults"></a>
+### 发布默认配置
+
+企业 Web 和桌面发行版在 `@deepseek-ai/dsh-base`、`@deepseek-ai/dsh-web-app` 之后加载此组合包。随包发布的补丁文件在 macOS、Linux 和 Windows 上默认关闭以下集成，新 Profile 无需添加本地停用覆盖项：
+
+| 集成 | 配置项 ID |
+|---|---|
+| DeepSeek 插件清单上报 | `plugin-package-inventory-deepseek` |
+| OpenTelemetry 上报服务 | `otel` |
+| 反馈会话日志上传 | `session-telemetry-otel` |
+| 会话反馈命令 | `command-feedback` |
+| 网页访问服务 | `web` |
+| DeepSeek 网页搜索 | `web-search-deepseek` |
+| DeepSeek 网页搜索与抓取 API | `web-deepseek-api` |
+| 公开网页获取 | `web-fetch-http` |
+| 网页搜索与读取工具 | `tool-web` |
+| DeepSeek API 密钥接入 | `llm-deepseek` |
+
+标准、PTC 和创造预设也关闭各自的网页工具，从而在缺少网页服务时正常加载。最小预设不包含网页工具。执行环境允许时，仍可使用 Shell 工具直接请求内网 HTTP。企业登录、受管模型、用量上报和自定义模型 API 保持可用。管理服务地址默认为空，需要按部署环境配置。
+
 ### 配置部署限制
 
 Bundle 插入 `unionpay-connection`、`llm-unionpay`、`unionpay-usage` 和 `ui-unionpay` 四个节点。在 Profile 的 `cordis.patch.yml` 中配置各包文档列出的字段。[连接](../../credentials/unionpay-connection/README.zh.md)、[模型](../../llm/llm-unionpay/README.zh.md)与[用量](../../telemetry/unionpay-usage/README.zh.md)包分别说明默认值和失败处理。
@@ -77,11 +97,11 @@ Bundle 插入 `unionpay-connection`、`llm-unionpay`、`unionpay-usage` 和 `ui-
 <a id="model-experience"></a>
 ## 模型体验
 
-通过[受管模型插件](../../llm/llm-unionpay/README.zh.md#model-experience)间接影响模型，由该插件完成协议转换，不添加企业提示词。
+通过[受管模型插件](../../llm/llm-unionpay/README.zh.md#model-experience)和所选预设的工具间接影响模型。企业 Profile 的模型请求不包含 `web_search` 和 `web_fetch`；受管模型插件负责协议转换。
 
 #### KV Cache 影响
 
-Bundle 自身不改变请求历史或缓存前缀。
+被停用的网页工具不出现在请求的工具定义中。其余插件分别负责各自对请求历史和缓存的影响。
 
 ## 已知限制与后续工作
 <a id="known-limitations-and-deferred-work"></a>
