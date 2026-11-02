@@ -72,6 +72,37 @@ describe('unique object-name prefix search', () => {
 })
 
 describe('maintained repository reference policy', () => {
+  it('accepts UV artifact sizes that coincide with numeric commit identifiers', () => {
+    const commit = '1'.repeat(7)
+    for (const file of ['uv.lock', 'python/sdk/uv.lock']) {
+      for (const line of [
+        `{ url = "https://example.invalid/package.whl", size = ${commit} },`,
+        `sdist = { url = "https://example.invalid/package.tar.gz", size = ${commit} }`,
+      ]) expect(findRepositoryReferences(file, line, new Set([commit]))).toEqual([])
+    }
+  })
+
+  it('still rejects numeric commit strings, URLs, and comments in UV locks', () => {
+    const commit = '1'.repeat(7)
+    for (const line of [
+      `{ url = "https://example.invalid/${commit}", size = 1 },`,
+      `{ reference = "${commit}", size = 1 },`,
+      `source = { git = "https://example.invalid/repository", rev = "${commit}" }`,
+      `{ size = "${commit}" },`,
+      `{ size = 1 }, # commit ${commit}`,
+      `# commit ${commit}`,
+    ]) {
+      expect(findRepositoryReferences('python/sdk/uv.lock', line, new Set([commit])))
+        .toEqual([{ file: 'python/sdk/uv.lock', line: 1, kind: 'commit-hash' }])
+    }
+    expect(findRepositoryReferences('source.md', commit, new Set([commit])))
+      .toEqual([{ file: 'source.md', line: 1, kind: 'commit-hash' }])
+  })
+
+  it('rejects malformed UV inline tables instead of skipping their references', () => {
+    expect(() => findRepositoryReferences('python/sdk/uv.lock', '{ size = }', new Set())).toThrow()
+  })
+
   it('permits only the independent kit repository and its source URLs', () => {
     for (const suffix of ['', '.git', '/tree/main/packages/entry']) {
       expect(findRepositoryReferences('package.json', `${organizationUrl}/libreoffice-kit${suffix}`, new Set())).toEqual([])

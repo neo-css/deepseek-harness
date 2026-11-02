@@ -7,6 +7,13 @@ A service can be a core spine service, a swappable capability seam, a bundle/com
 
 ```mermaid
 flowchart LR
+  pkg_unionpay_connection["unionpay-connection"]
+  svc_unionpayConnection["ctx.unionpayConnection<br/>Enterprise member connection"]
+  pkg_llm_unionpay["llm-unionpay"]
+  pkg_unionpay_usage["unionpay-usage"]
+  pkg_client_ui_unionpay["client-ui-unionpay"]
+  svc_unionpayModels["ctx.unionpayModels<br/>Managed enterprise model routes"]
+  svc_unionpayUsage["ctx.unionpayUsage<br/>Enterprise usage delivery"]
   pkg_experimental_client_ui_cot_translation["experimental-client-ui-cot-translation"]
   svc_cotTranslation["ctx.cotTranslation<br/>Reasoning translation Remote"]
   pkg_experimental_translator["experimental-translator"]
@@ -370,6 +377,7 @@ flowchart LR
   pkg_llm_deepseek --> svc_llm
   pkg_llm_pi_ai --> svc_llm
   pkg_llm_replay --> svc_llm
+  pkg_llm_unionpay --> svc_unionpayModels
   pkg_lsp --> svc_lsp
   pkg_lsp_stdio --> svc_lsp
   pkg_mcp_client --> svc_mcpResources
@@ -436,6 +444,8 @@ flowchart LR
   pkg_tool_subagent --> svc_subagentModelSelection
   pkg_tools --> svc_tools
   pkg_typert_registry --> svc_typert
+  pkg_unionpay_connection --> svc_unionpayConnection
+  pkg_unionpay_usage --> svc_unionpayUsage
   pkg_user_approval --> svc_approval
   pkg_user_questions --> svc_userQuestions
   pkg_web --> svc_web
@@ -588,6 +598,11 @@ flowchart LR
   svc_translator --> pkg_experimental_client_ui_cot_translation
   svc_typert --> pkg_api_gateway
   svc_typert --> pkg_typert_loader
+  svc_unionpayConnection --> pkg_client_ui_unionpay
+  svc_unionpayConnection --> pkg_llm_unionpay
+  svc_unionpayConnection --> pkg_unionpay_usage
+  svc_unionpayModels --> pkg_unionpay_usage
+  svc_unionpayUsage --> pkg_client_ui_unionpay
   svc_userQuestions --> pkg_tool_ask_user
   svc_web --> pkg_tool_web
   svc_webApp --> pkg_harness_dev_context
@@ -611,6 +626,9 @@ flowchart LR
 
 | ctx key | Role | Owner | Implementations | Direct consumers | Companion plugins | Note |
 | --- | --- | --- | --- | --- | --- | --- |
+| `ctx.unionpayConnection` | `service` | [`unionpay-connection`](../packages/credentials/unionpay-connection) | - | [`llm-unionpay`](../packages/llm/llm-unionpay), [`unionpay-usage`](../packages/telemetry/unionpay-usage), [`client-ui-unionpay`](../packages/client/ui-unionpay) | - | Owns member authentication, renewable model grants, and the authorized model catalog for one enterprise origin. |
+| `ctx.unionpayModels` | `service` | [`llm-unionpay`](../packages/llm/llm-unionpay) | - | [`unionpay-usage`](../packages/telemetry/unionpay-usage) | - | Registers and withdraws the connected member's managed routes and exposes route ownership to usage collection. |
+| `ctx.unionpayUsage` | `service` | [`unionpay-usage`](../packages/telemetry/unionpay-usage) | - | [`client-ui-unionpay`](../packages/client/ui-unionpay) | - | Persists member-bound model-usage reports and retries delivery with stable request identifiers. |
 | `ctx.cotTranslation` | `service` | [`experimental-client-ui-cot-translation`](../packages/experimental/client-ui-cot-translation) | - | - | - | Serves reasoning translations, reuses saved results, and joins ordinary Session activation for uncached inactive Sessions. |
 | `ctx.translator` | `service` | [`experimental-translator`](../packages/experimental/translator) | - | [`experimental-client-ui-cot-translation`](../packages/experimental/client-ui-cot-translation) | - | Resolves Google or Bing requests and retains shared experimental records through the active Session writer. |
 | `ctx.hmr` | `core` | [`hmr`](../packages/boot/hmr) | - | [`app-boot`](../packages/boot/app-boot) | - | Owns module and exact configuration watchers; application mutations share its queue and automatic reloads await the application file lock. |

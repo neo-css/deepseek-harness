@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process'
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { parse as parseToml } from 'smol-toml'
 import { canonicalReferenceText } from './verify-public-repository-links.ts'
 
 const root = resolve(import.meta.dirname, '..')
@@ -31,12 +32,23 @@ function isMaintained(file: string): boolean {
   return !excludedPrefixes.some(prefix => file.startsWith(prefix))
 }
 
+/** UV inline artifact tables contain numeric metadata as well as reference strings. */
+function commitReferenceText(file: string, line: string): string {
+  if (!/(?:^|\/)uv\.lock$/.test(file)) return line
+  const table = line.trim().replace(/,$/, '')
+  if (!/^(?:[\w-]+\s*=\s*)?\{/.test(table) || !table.endsWith('}')) return line
+  const statement = table.startsWith('{') ? `artifact = ${table}` : table
+  return JSON.stringify(parseToml(statement), (_key: string, value: unknown) =>
+    typeof value === 'number' || typeof value === 'bigint' ? null : value)
+}
+
 /**
  * Inspect a maintained source file against known commit identifiers.
  * @param file - Repository-relative path used in diagnostics and exclusions.
  * @param source - File text or a symlink's stored target.
  * @param commits - Lowercase, unambiguous full or abbreviated commit identifiers.
  * @returns One finding per line and reference kind; digests and other Git object types are accepted.
+ * @throws When a UV inline artifact table is malformed.
  */
 export function findRepositoryReferences(
   file: string,
@@ -49,7 +61,7 @@ export function findRepositoryReferences(
     if (organizationUrl.test(canonicalReferenceText(line).replace(kitRepositoryUrl, ''))) {
       references.push({ file, line: index + 1, kind: 'organization-url' })
     }
-    if ([...line.matchAll(commitCandidate)].some(match => commits.has(match[0].toLowerCase()))) {
+    if ([...commitReferenceText(file, line).matchAll(commitCandidate)].some(match => commits.has(match[0].toLowerCase()))) {
       references.push({ file, line: index + 1, kind: 'commit-hash' })
     }
   }

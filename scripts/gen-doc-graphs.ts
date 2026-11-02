@@ -108,6 +108,30 @@ const GROUP_ORDER = [
 
 const SERVICE_ROLES: ServiceRole[] = [
   {
+    key: 'unionpayConnection',
+    pkg: 'unionpay-connection',
+    title: 'Enterprise member connection',
+    mode: 'service',
+    consumers: ['llm-unionpay', 'unionpay-usage', 'client-ui-unionpay'],
+    note: 'Owns member authentication, renewable model grants, and the authorized model catalog for one enterprise origin.',
+  },
+  {
+    key: 'unionpayModels',
+    pkg: 'llm-unionpay',
+    title: 'Managed enterprise model routes',
+    mode: 'service',
+    consumers: ['unionpay-usage'],
+    note: 'Registers and withdraws the connected member\'s managed routes and exposes route ownership to usage collection.',
+  },
+  {
+    key: 'unionpayUsage',
+    pkg: 'unionpay-usage',
+    title: 'Enterprise usage delivery',
+    mode: 'service',
+    consumers: ['client-ui-unionpay'],
+    note: 'Persists member-bound model-usage reports and retries delivery with stable request identifiers.',
+  },
+  {
     key: 'cotTranslation',
     pkg: 'experimental-client-ui-cot-translation',
     title: 'Reasoning translation Remote',

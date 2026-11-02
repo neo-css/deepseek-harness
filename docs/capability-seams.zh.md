@@ -9,6 +9,13 @@
 
 ```mermaid
 flowchart LR
+  pkg_unionpay_connection["unionpay-connection"]
+  svc_unionpayConnection["ctx.unionpayConnection<br/>Enterprise member connection"]
+  pkg_llm_unionpay["llm-unionpay"]
+  pkg_unionpay_usage["unionpay-usage"]
+  pkg_client_ui_unionpay["client-ui-unionpay"]
+  svc_unionpayModels["ctx.unionpayModels<br/>Managed enterprise model routes"]
+  svc_unionpayUsage["ctx.unionpayUsage<br/>Enterprise usage delivery"]
   pkg_experimental_client_ui_cot_translation["experimental-client-ui-cot-translation"]
   svc_cotTranslation["ctx.cotTranslation<br/>Reasoning translation Remote"]
   pkg_experimental_translator["experimental-translator"]
@@ -372,6 +379,7 @@ flowchart LR
   pkg_llm_deepseek --> svc_llm
   pkg_llm_pi_ai --> svc_llm
   pkg_llm_replay --> svc_llm
+  pkg_llm_unionpay --> svc_unionpayModels
   pkg_lsp --> svc_lsp
   pkg_lsp_stdio --> svc_lsp
   pkg_mcp_client --> svc_mcpResources
@@ -438,6 +446,8 @@ flowchart LR
   pkg_tool_subagent --> svc_subagentModelSelection
   pkg_tools --> svc_tools
   pkg_typert_registry --> svc_typert
+  pkg_unionpay_connection --> svc_unionpayConnection
+  pkg_unionpay_usage --> svc_unionpayUsage
   pkg_user_approval --> svc_approval
   pkg_user_questions --> svc_userQuestions
   pkg_web --> svc_web
@@ -590,6 +600,11 @@ flowchart LR
   svc_translator --> pkg_experimental_client_ui_cot_translation
   svc_typert --> pkg_api_gateway
   svc_typert --> pkg_typert_loader
+  svc_unionpayConnection --> pkg_client_ui_unionpay
+  svc_unionpayConnection --> pkg_llm_unionpay
+  svc_unionpayConnection --> pkg_unionpay_usage
+  svc_unionpayModels --> pkg_unionpay_usage
+  svc_unionpayUsage --> pkg_client_ui_unionpay
   svc_userQuestions --> pkg_tool_ask_user
   svc_web --> pkg_tool_web
   svc_webApp --> pkg_harness_dev_context
@@ -613,6 +628,9 @@ flowchart LR
 
 | ctx 键 | 角色 | 所属包 | 实现 | 直接消费方 | 配套插件 | 说明 |
 | --- | --- | --- | --- | --- | --- | --- |
+| `ctx.unionpayConnection` | `service` | [`unionpay-connection`](../packages/credentials/unionpay-connection) | - | [`llm-unionpay`](../packages/llm/llm-unionpay), [`unionpay-usage`](../packages/telemetry/unionpay-usage), [`client-ui-unionpay`](../packages/client/ui-unionpay) | - | 负责一个企业服务地址下的成员认证、可续期模型授权和已授权模型目录。 |
+| `ctx.unionpayModels` | `service` | [`llm-unionpay`](../packages/llm/llm-unionpay) | - | [`unionpay-usage`](../packages/telemetry/unionpay-usage) | - | 注册或撤销当前成员的受管模型路由，并向用量采集暴露路由归属。 |
+| `ctx.unionpayUsage` | `service` | [`unionpay-usage`](../packages/telemetry/unionpay-usage) | - | [`client-ui-unionpay`](../packages/client/ui-unionpay) | - | 持久化与成员绑定的模型用量报告，并使用稳定的请求标识重试投递。 |
 | `ctx.cotTranslation` | `service` | [`experimental-client-ui-cot-translation`](../packages/experimental/client-ui-cot-translation) | - | - | - | 为展开的思考内容提供有界的 Session 翻译请求，不改变模型可见历史。 |
 | `ctx.translator` | `service` | [`experimental-translator`](../packages/experimental/translator) | - | [`experimental-client-ui-cot-translation`](../packages/experimental/client-ui-cot-translation) | - | 解析 Google 或 Bing 请求，并可选保留统一的实验性 Session 记录。 |
 | `ctx.hmr` | `core` | [`hmr`](../packages/boot/hmr) | - | [`app-boot`](../packages/boot/app-boot) | - | 负责模块和精确配置监听；应用修改共用其队列，自动重载等待应用文件锁。 |
