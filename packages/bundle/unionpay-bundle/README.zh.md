@@ -66,6 +66,8 @@ pnpm dsh web --no-open
 
 标准、PTC 和创造预设也关闭各自的网页工具，从而在缺少网页服务时正常加载。最小预设不包含网页工具。执行环境允许时，仍可使用 Shell 工具直接请求内网 HTTP。企业登录、受管模型、用量上报和自定义模型 API 保持可用。管理服务地址默认为空，需要按部署环境配置。
 
+全新的企业 Web Profile 直接进入工作区。其 Models 插件通过 `welcomeNotice: false` 关闭预览版说明，并通过 `credentialOnboarding: false` 关闭自动 API Key 引导，不会代替用户写入已确认记录。
+
 ### 配置部署限制
 
 Bundle 插入 `unionpay-connection`、`llm-unionpay`、`unionpay-usage` 和 `ui-unionpay` 四个节点。在 Profile 的 `cordis.patch.yml` 中配置各包文档列出的字段。[连接](../../credentials/unionpay-connection/README.zh.md)、[模型](../../llm/llm-unionpay/README.zh.md)与[用量](../../telemetry/unionpay-usage/README.zh.md)包分别说明默认值和失败处理。
@@ -97,7 +99,7 @@ Bundle 插入 `unionpay-connection`、`llm-unionpay`、`unionpay-usage` 和 `ui-
 <a id="model-experience"></a>
 ## 模型体验
 
-通过[受管模型插件](../../llm/llm-unionpay/README.zh.md#model-experience)和所选预设的工具间接影响模型。企业 Profile 的模型请求不包含 `web_search` 和 `web_fetch`；受管模型插件负责协议转换。
+通过负责协议转换的[受管模型插件](../../llm/llm-unionpay/README.zh.md#model-experience)，以及让请求不包含 `web_search` 和 `web_fetch` 的预设装配间接影响模型。
 
 #### KV Cache 影响
 

@@ -45,6 +45,7 @@
 
 - id: ui-settings-models
   config:
+    welcomeNotice: false
     credentialOnboarding: false
 
 - insert:

@@ -66,6 +66,8 @@ Enterprise Web and desktop distributions load this bundle after `@deepseek-ai/ds
 
 The standard, PTC, and creator presets also disable their web tools, so they load without the web service. The minimal preset has no web tools. Shell tools remain available for direct intranet HTTP requests where the execution environment permits them. Enterprise sign-in, managed models, usage reporting, and custom model APIs remain available. The management service origin defaults to empty and must be configured for the deployment.
 
+A fresh enterprise Web profile opens the workspace directly. Its Models plugin disables both the preview notice (`welcomeNotice: false`) and automatic API-key onboarding (`credentialOnboarding: false`), without recording an acknowledgement for the user.
+
 ### Configure deployment limits
 
 The bundle inserts rows named `unionpay-connection`, `llm-unionpay`, `unionpay-usage`, and `ui-unionpay`. Configure their documented fields in the profile's `cordis.patch.yml`. The [connection](../../credentials/unionpay-connection/README.md), [model](../../llm/llm-unionpay/README.md), and [usage](../../telemetry/unionpay-usage/README.md) packages own their defaults and failure behavior.
@@ -97,7 +99,7 @@ The bundle inserts rows named `unionpay-connection`, `llm-unionpay`, `unionpay-u
 <a id="model-experience"></a>
 ## Model Experience
 
-Indirectly, through the [managed-model plugin](../../llm/llm-unionpay/README.md#model-experience) and the selected preset's tools. Enterprise profiles omit `web_search` and `web_fetch` from model requests; the managed-model plugin owns protocol conversion.
+Indirectly, through the [managed-model plugin](../../llm/llm-unionpay/README.md#model-experience) for protocol conversion and preset composition for requests without `web_search` or `web_fetch`.
 
 #### KV Cache effect
 

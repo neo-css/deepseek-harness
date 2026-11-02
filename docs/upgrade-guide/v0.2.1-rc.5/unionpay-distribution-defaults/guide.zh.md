@@ -9,7 +9,7 @@ description: "UnionPay Profile 默认关闭 DeepSeek 上报、API 密钥接入�
 
 ## 变更
 
-可选的 `@deepseek-ai/dsh-unionpay-bundle` 默认关闭其[发布默认配置](../../../../packages/bundle/unionpay-bundle/README.zh.md#distribution-defaults)列出的十项集成，包括 DeepSeek 上报、API 密钥接入和网页搜索与抓取。此前，Profile 从基础组合包和 Web 组合包继承这些集成。标准、PTC 和创造预设关闭各自的网页工具，从而在缺少网页服务时保持可用。企业模型和自定义模型 API 保持可用。
+可选的 `@deepseek-ai/dsh-unionpay-bundle` 默认关闭其[发布默认配置](../../../../packages/bundle/unionpay-bundle/README.zh.md#distribution-defaults)列出的十项集成，包括 DeepSeek 上报、API 密钥接入和网页搜索与抓取。此前，Profile 从基础组合包和 Web 组合包继承这些集成。标准、PTC 和创造预设关闭各自的网页工具，从而在缺少网页服务时保持可用。新的企业 Web Profile 直接打开工作区，不显示预览版说明或 API Key 引导。企业模型和自定义模型 API 保持可用。
 
 ## 迁移
 

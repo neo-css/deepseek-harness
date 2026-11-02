@@ -9,7 +9,7 @@ English | [中文](guide.zh.md)
 
 ## Change
 
-The optional `@deepseek-ai/dsh-unionpay-bundle` disables the ten integrations listed in its [distribution defaults](../../../../packages/bundle/unionpay-bundle/README.md#distribution-defaults), including DeepSeek reporting, API-key access, and web search and fetch. Previously, profiles inherited those integrations from the base and Web bundles. The standard, PTC, and creator presets disable their web tools so they remain usable without the web service. Enterprise models and custom model APIs remain available.
+The optional `@deepseek-ai/dsh-unionpay-bundle` disables the ten integrations listed in its [distribution defaults](../../../../packages/bundle/unionpay-bundle/README.md#distribution-defaults), including DeepSeek reporting, API-key access, and web search and fetch. Previously, profiles inherited those integrations from the base and Web bundles. The standard, PTC, and creator presets disable their web tools so they remain usable without the web service. New enterprise Web profiles open the workspace without the preview notice or API-key onboarding. Enterprise models and custom model APIs remain available.
 
 ## Migration
 
