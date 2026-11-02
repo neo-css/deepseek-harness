@@ -4,6 +4,7 @@ import type { UsageDeliveryView } from '@deepseek-ai/dsh-unionpay-usage/types'
 
 /** en page copy. */
 export const en = {
+  'brand': 'UPH',
   'title': 'Enterprise account',
   'signIn': 'Enterprise sign-in',
   'settings': 'Settings',
@@ -74,6 +75,7 @@ export type LocaleKey = keyof typeof en
 
 /** zh page copy. */
 export const zh = {
+  'brand': 'UPH',
   'title': '企业账号',
   'signIn': '企业登录',
   'settings': '设置',
@@ -141,6 +143,7 @@ export const zh = {
 
 /** ja page copy. */
 export const ja = {
+  'brand': 'UPH',
   'title': '企業アカウント',
   'signIn': '企業アカウントでログイン',
   'settings': '設定',
@@ -208,6 +211,7 @@ export const ja = {
 
 /** es page copy. */
 export const es = {
+  'brand': 'UPH',
   'title': 'Cuenta de empresa',
   'signIn': 'Iniciar sesión de empresa',
   'settings': 'Configuración',
@@ -275,6 +279,7 @@ export const es = {
 
 /** fr page copy. */
 export const fr = {
+  'brand': 'UPH',
   'title': 'Compte entreprise',
   'signIn': 'Connexion entreprise',
   'settings': 'Paramètres',
@@ -342,6 +347,7 @@ export const fr = {
 
 /** de page copy. */
 export const de = {
+  'brand': 'UPH',
   'title': 'Unternehmenskonto',
   'signIn': 'Unternehmensanmeldung',
   'settings': 'Einstellungen',
@@ -409,6 +415,7 @@ export const de = {
 
 /** ru page copy. */
 export const ru = {
+  'brand': 'UPH',
   'title': 'Корпоративная учётная запись',
   'signIn': 'Корпоративный вход',
   'settings': 'Настройки',
@@ -476,6 +483,7 @@ export const ru = {
 
 /** pt page copy. */
 export const pt = {
+  'brand': 'UPH',
   'title': 'Conta empresarial',
   'signIn': 'Entrar na empresa',
   'settings': 'Configurações',

@@ -8,11 +8,23 @@ import type { EnterpriseMemberId, EnterpriseSignInId } from '@deepseek-ai/dsh-un
 import type { GlobalStandardProps } from '@deepseek-ai/dsh-client-ui-slots'
 import { EnterprisePage, type EnterprisePageProps } from '../src/client/EnterprisePage.tsx'
 import { EnterpriseAccount } from '../src/client/EnterpriseAccount.tsx'
+import { EnterpriseBrand } from '../src/client/EnterpriseBrand.tsx'
 import { en, zh, errorKey } from '../src/client/locales.ts'
 import type { EnterpriseFormState, EnterprisePageState } from '../src/client/controller.ts'
 import type {} from '../src/client/index.ts'
 
-afterEach(cleanup)
+afterEach(() => { cleanup(); vi.unstubAllEnvs() })
+
+describe('enterprise sidebar brand', () => {
+  it('shows only UPH even when build metadata is available', () => {
+    vi.stubEnv('DSH_CLIENT_VERSION', '0.2.1-rc.5')
+    vi.stubEnv('DSH_CLIENT_COMMIT_HASH', 'abc1234')
+    vi.stubEnv('DSH_CLIENT_GIT_DIRTY', 'true')
+    const mounted = render(<EnterpriseBrand t={key => key === 'brand' ? en.brand : key} />)
+    expect(mounted.container.textContent).toBe('UPH')
+    expect(zh.brand).toBe(en.brand)
+  })
+})
 
 function page(overrides: Partial<EnterprisePageState> = {}, dirty = false, account = false) {
   const state = createSnapshotStore<EnterprisePageState>({ connection: { origin: 'http://enterprise.test', status: 'signed-out', member: null, projects: [], quota: null, modelCount: 0, error: null, signIn: null }, delivery: { pending: 0, collection: 'enabled', waitingForMember: false, lastDeliveryAt: null, error: null, failedToPersist: 0 }, transportFailed: false, busy: false, ...overrides })

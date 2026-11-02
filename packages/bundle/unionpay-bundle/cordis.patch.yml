@@ -10,6 +10,9 @@
 - id: llm-deepseek-account
   disabled: true
 
+- id: ui-brand-official
+  disabled: true
+
 - id: plugin-package-inventory-deepseek
   disabled: true
 

@@ -25,6 +25,7 @@ it.each(['web', 'desktop'])('disables external integrations in a fresh enterpris
   const warnings: string[] = []
   const rows = composeEntries(profile.layers.map(layer => layer.patches), warning => warnings.push(warning))
   expect(warnings).toEqual([])
+  expect(rows.find(row => row.id === 'ui-brand-official')).toMatchObject({ disabled: true })
   for (const id of [
     'plugin-package-inventory-deepseek', 'otel', 'session-telemetry-otel', 'command-feedback',
     'web', 'web-search-deepseek', 'web-deepseek-api', 'web-fetch-http', 'tool-web', 'llm-deepseek',
