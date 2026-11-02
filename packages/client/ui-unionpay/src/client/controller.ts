@@ -45,6 +45,7 @@ export class EnterprisePageController {
   private readonly closeStreams: Array<() => Promise<void>> = []
   private sequence = 0
   private closed = false
+  private signInPopup: { window: Window | null; navigated: boolean } | undefined
 
   /**
    * @param ctx - generated enterprise Remote services.
@@ -67,6 +68,12 @@ export class EnterprisePageController {
         for await (const item of connection) {
           const previous = this.state.getSnapshot()
           this.state.set({ ...previous, connection: item.value, transportFailed: false })
+          if (previous.connection?.signIn?.status === 'pending' && item.value.signIn?.status !== 'pending') {
+            if (item.value.status === 'connected' && item.value.signIn === null && this.signInPopup?.navigated) {
+              this.signInPopup = undefined
+            }
+            else this.closeSignInPopup()
+          }
           if (previous.connection?.signIn?.status === 'pending' && item.value.signIn?.status === 'failed') this.show('signInFailed', false)
           if (previous.connection?.signIn?.status === 'pending' && item.value.signIn === null && item.value.status === 'connected') this.show('signedIn', true)
           item.accept()
@@ -88,6 +95,43 @@ export class EnterprisePageController {
   }
 
   private show(key: LocaleKey, success: boolean): void { this.notice.set({ id: ++this.sequence, key, success }) }
+
+  private closeSignInPopup(): void {
+    this.signInPopup?.window?.close()
+    this.signInPopup = undefined
+  }
+
+  private async startSso(): Promise<void> {
+    const state = this.state.getSnapshot()
+    if (this.closed || state.busy || state.connection?.signIn?.status === 'pending') return
+    this.closeSignInPopup()
+    const desktop = 'dshDesktop' in globalThis
+    // Preopening during the click preserves browser popup permission across the Host request.
+    const popup = { window: desktop ? null : window.open('about:blank', '_blank'), navigated: false }
+    this.signInPopup = popup
+    if (popup.window) popup.window.opener = null
+    const ok = await this.action(async () => {
+      const result = await this.ctx.remote.unionpay.startSso()
+      if (!result.ok || this.closed) return false
+      if (this.signInPopup !== popup) {
+        const latest = this.state.getSnapshot().connection
+        return latest?.status === 'connected' && latest.signIn === null
+      }
+      if (result.value.status === 'connected' && result.value.signIn === null) {
+        this.closeSignInPopup()
+        return true
+      }
+      const attempt = result.value.signIn
+      if (attempt?.status !== 'pending' || !attempt.verificationUrl) return false
+      if (desktop || popup.window === null) window.open(attempt.verificationUrl, '_blank', 'noopener,noreferrer')
+      else if (popup.window && !popup.window.closed) {
+        popup.window.location.replace(attempt.verificationUrl)
+        popup.navigated = true
+      }
+      return true
+    }, null)
+    if (!ok && this.signInPopup === popup) this.closeSignInPopup()
+  }
 
   private async action(run: () => Promise<boolean>, success: LocaleKey | null): Promise<boolean> {
     if (this.state.getSnapshot().busy) return false
@@ -112,7 +156,7 @@ export class EnterprisePageController {
         const result = await this.ctx.remote.unionpay.signInCode(code)
         return result.ok && result.value.status === 'connected' && result.value.signIn === null
       }, null),
-      startSso: () => { void this.action(async () => { const result = await this.ctx.remote.unionpay.startSso(); return result.ok && result.value.signIn?.status === 'pending' }, null) },
+      startSso: () => { void this.startSso() },
       cancelSignIn: (id) => { void this.action(async () => (await this.ctx.remote.unionpay.cancelSignIn(id)).ok, null) },
       signOut: () => { void this.action(async () => { const result = await this.ctx.remote.unionpay.signOut(); return result.ok && result.value.error === null }, 'signedOutNotice') },
       refresh: () => { void this.action(async () => { const result = await this.ctx.remote.unionpay.refresh(); return result.ok && result.value.error === null }, 'refreshed') },
@@ -126,9 +170,10 @@ export class EnterprisePageController {
    */
   dismissNotice(id: number): void { if (this.notice.getSnapshot()?.id === id) this.notice.set(null) }
 
-  /** Stop and join Remote streams before releasing staged form subscriptions. */
+  /** Close the pending login tab and join Remote streams before releasing staged form subscriptions. */
   async dispose(): Promise<void> {
     this.closed = true
+    this.closeSignInPopup()
     await Promise.all(this.closeStreams.map(close => close()))
     this.form.dispose()
   }

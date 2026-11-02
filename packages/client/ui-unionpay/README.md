@@ -27,6 +27,8 @@ Sign in to your enterprise account from the sidebar and manage its connection in
 
 Enable the [enterprise bundle](../../bundle/unionpay-bundle/README.md) in the Web or Desktop profile and click **Enterprise sign-in** in the bottom-left sidebar, or open **Settings → Enterprise account**. The sidebar displays the member name after sign-in. The adjacent settings button remains available when the sidebar is collapsed. Save the enterprise origin before starting either login flow. Request failures preserve the displayed data, and persistent delivery issues remain visible beside the pending count.
 
+Click **Enterprise SSO** to open the login page automatically: Web uses a new browser tab and Desktop opens the system browser. If the browser blocks the tab, use **Open sign-in page** in the pending login panel. Failed or cancelled attempts close the tab opened by Web; successful login leaves its completion page open.
+
 -----
 
 <a id="understand-the-implementation"></a>

@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-test-runtime'
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
-import type { EnterpriseMemberId } from '@deepseek-ai/dsh-unionpay-connection/types'
+import type { EnterpriseMemberId, EnterpriseSignInId } from '@deepseek-ai/dsh-unionpay-connection/types'
 import type { GlobalStandardProps } from '@deepseek-ai/dsh-client-ui-slots'
 import { EnterprisePage, type EnterprisePageProps } from '../src/client/EnterprisePage.tsx'
 import { EnterpriseAccount } from '../src/client/EnterpriseAccount.tsx'
@@ -95,6 +95,19 @@ describe('enterprise page', () => {
     expect(actions.signInCode).toHaveBeenCalledWith('member-code')
     expect(input).toHaveProperty('value', '')
     expect(actions.save).not.toHaveBeenCalled()
+  })
+
+  it('retains a manual login link and cancellation while browser approval is pending', () => {
+    const id = 'attempt' as EnterpriseSignInId
+    const verificationUrl = 'https://enterprise.test/api/enterprise-client/sso/start?device=public-ticket'
+    const { actions } = page({ connection: {
+      origin: 'https://enterprise.test', status: 'signed-out', member: null, projects: [], quota: null,
+      modelCount: 0, error: null, signIn: { id, status: 'pending', verificationUrl },
+    } })
+    expect(screen.getByRole('link', { name: en.openBrowser })).toHaveProperty('href', verificationUrl)
+    expect(screen.getByRole('button', { name: en.sso })).toHaveProperty('disabled', true)
+    fireEvent.click(screen.getByRole('button', { name: en.cancel }))
+    expect(actions.cancelSignIn).toHaveBeenCalledExactlyOnceWith(id)
   })
 
   it('preserves usage details while displaying a persistent delivery failure', () => {
