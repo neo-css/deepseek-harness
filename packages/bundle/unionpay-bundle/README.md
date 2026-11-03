@@ -53,9 +53,13 @@ Enterprise Web and desktop distributions load this bundle after `@deepseek-ai/ds
 | Integration | Entry ID |
 |---|---|
 | DeepSeek plugin inventory reporting | `plugin-package-inventory-deepseek` |
+| DeepSeek session-log upload | `session-log-deepseek` |
+| Session-log upload settings | `ui-settings-session-log` |
 | OpenTelemetry reporting service | `otel`, `desktop-product-telemetry` |
 | Feedback session-log upload | `session-telemetry-otel` |
 | Session feedback command | `command-feedback` |
+| Message feedback recording | `message-feedback` |
+| Message feedback UI | `ui-message-feedback` |
 | Web access service | `web` |
 | DeepSeek web search | `web-search-deepseek` |
 | DeepSeek Search and Fetch APIs | `web-deepseek-api` |

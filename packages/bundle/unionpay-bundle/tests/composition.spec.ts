@@ -30,8 +30,9 @@ it('disables external integrations in a fresh enterprise Web profile', () => {
   expect(rows.find(row => row.id === 'ui-brand-official')).toMatchObject({ disabled: true })
   for (const id of [
     'plugin-package-inventory-deepseek', 'otel', 'desktop-product-telemetry', 'session-telemetry-otel', 'command-feedback',
+    'message-feedback', 'ui-message-feedback', 'ui-settings-session-log',
     'web', 'web-search-deepseek', 'web-deepseek-api', 'web-fetch-http', 'tool-web', 'llm-deepseek',
-    'ui-settings-account', 'account-controller', 'deepseek-account', 'llm-deepseek-account',
+    'ui-settings-account', 'account-controller', 'deepseek-account', 'llm-deepseek-account', 'session-log-deepseek',
   ]) {
     expect(rows.find(row => row.id === id), id).toMatchObject({ disabled: true })
   }

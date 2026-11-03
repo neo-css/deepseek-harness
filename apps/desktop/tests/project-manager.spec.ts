@@ -54,7 +54,10 @@ describe('desktop external plugin profile', () => {
     const rows = composeEntries(profile.layers.map(layer => layer.patches))
     expect(rows.find(row => row.id === 'ui-settings-models')?.config)
       .toEqual({ welcomeNotice: false, credentialOnboarding: false })
-    for (const id of ['deepseek-account', 'llm-deepseek', 'ui-settings-account', 'ui-brand-official']) {
+    for (const id of [
+      'deepseek-account', 'llm-deepseek', 'ui-settings-account', 'ui-brand-official', 'session-log-deepseek',
+      'message-feedback', 'ui-message-feedback', 'ui-settings-session-log',
+    ]) {
       expect(rows.find(row => row.id === id), id).toMatchObject({ disabled: true })
     }
     expect(rows.find(row => row.id === 'ui-unionpay')).toMatchObject({ name: '@deepseek-ai/dsh-client-ui-unionpay' })

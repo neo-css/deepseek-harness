@@ -53,9 +53,13 @@ CLI 安装随附此 Bundle 及其依赖。已有 Profile 保留原有 Bundle 选
 | 集成 | 配置项 ID |
 |---|---|
 | DeepSeek 插件清单上报 | `plugin-package-inventory-deepseek` |
+| DeepSeek 会话日志上传 | `session-log-deepseek` |
+| 会话日志上传设置 | `ui-settings-session-log` |
 | OpenTelemetry 上报服务 | `otel`、`desktop-product-telemetry` |
 | 反馈会话日志上传 | `session-telemetry-otel` |
 | 会话反馈命令 | `command-feedback` |
+| 消息反馈记录 | `message-feedback` |
+| 消息反馈界面 | `ui-message-feedback` |
 | 网页访问服务 | `web` |
 | DeepSeek 网页搜索 | `web-search-deepseek` |
 | DeepSeek 网页搜索与抓取 API | `web-deepseek-api` |

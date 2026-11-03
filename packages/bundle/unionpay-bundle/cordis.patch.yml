@@ -16,6 +16,12 @@
 - id: plugin-package-inventory-deepseek
   disabled: true
 
+- id: session-log-deepseek
+  disabled: true
+
+- id: ui-settings-session-log
+  disabled: true
+
 - id: otel
   disabled: true
 
@@ -26,6 +32,12 @@
   disabled: true
 
 - id: command-feedback
+  disabled: true
+
+- id: message-feedback
+  disabled: true
+
+- id: ui-message-feedback
   disabled: true
 
 - id: web

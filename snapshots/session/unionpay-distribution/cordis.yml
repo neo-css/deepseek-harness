@@ -3,6 +3,8 @@
   disabled: true
 - id: plugin-package-inventory-deepseek
   disabled: true
+- id: session-log-deepseek
+  disabled: true
 - id: credentials
   disabled: false
 - id: authorization

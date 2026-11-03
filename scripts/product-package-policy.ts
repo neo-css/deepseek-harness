@@ -37,6 +37,8 @@ export const PRODUCT_PACKAGE_POLICY: Readonly<Record<string, ProductPackagePolic
   'packages/fs/tool-str-replace-editor': { category: 'optional', reason: 'Explicit alternative to the default filesystem editing tools.' },
   'packages/client/ui-brand-official': { category: 'optional', reason: 'Official branding requires an explicit override of the enterprise profile defaults.' },
   'packages/client/ui-settings-account': { category: 'optional', reason: 'Official account settings require an explicit override of the enterprise profile defaults.' },
+  'packages/client/ui-message-feedback': { category: 'optional', reason: 'Message feedback controls require explicit activation with the feedback recording service.' },
+  'packages/client/ui-settings-session-log': { category: 'optional', reason: 'Session-log upload controls require explicit activation in enterprise profiles.' },
   'packages/host/product-telemetry-otel': { category: 'optional', reason: 'Desktop product telemetry requires explicit activation together with OpenTelemetry.' },
   'packages/sdk/client': { category: 'sdk', reason: 'Published TypeScript embedding client runs in the consumer process.' },
   'packages/typert/generator': { category: 'build', reason: 'Build-time generation of type metadata.' },
