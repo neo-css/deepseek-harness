@@ -29,7 +29,7 @@ Enable the [enterprise bundle](../../bundle/unionpay-bundle/README.md) in the We
 
 Click **Enterprise SSO** to open the login page automatically: Web uses a new browser tab and Desktop opens the system browser. If the browser blocks the tab, use **Open sign-in page** in the pending login panel. Failed or cancelled attempts close the tab opened by Web; successful login leaves its completion page open.
 
-The enterprise sidebar displays **UPH** without a version badge. The enterprise bundle disables the official brand occupant so release builds use the same name.
+The enterprise sidebar displays the shared UPH artwork and **UPH** without a version badge. The New Session heading uses the same artwork. The enterprise bundle disables the official brand occupant so release builds use the same name.
 
 -----
 

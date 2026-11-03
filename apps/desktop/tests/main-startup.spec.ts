@@ -531,7 +531,7 @@ describe('desktop main startup', () => {
     }
   })
 
-  it('serves shell dialogs and their assets without forwarding them to the Host', async () => {
+  it('serves shell dialogs and application icons from their packaged resources', async () => {
     await readyForUpdate()
     const { serveWebDocument, forwardWebRequest } = await import('../src/web-document.ts')
     const handler = harness.protocolHandle.mock.calls[0]![1]
@@ -539,6 +539,12 @@ describe('desktop main startup', () => {
       const request = new Request(`dsh-app://shell/${file}`)
       await handler(request)
       expect(serveWebDocument).toHaveBeenLastCalledWith(request, join('desktop-test-app', 'renderer'))
+    }
+    for (const file of ['favicon.svg', 'favicon-dark.svg', 'icon-192.png', 'icon-512.png']) {
+      const request = new Request(`dsh-app://app/${file}`)
+      await handler(request)
+      expect(serveWebDocument).toHaveBeenLastCalledWith(request,
+        join('desktop-test-app', 'dsh', 'node_modules', '@deepseek-ai', 'dsh-web-frontend', 'dist'))
     }
     expect(forwardWebRequest).not.toHaveBeenCalled()
     expect((await handler(new Request('dsh-app://unknown/update-dialog.html'))).status).toBe(404)

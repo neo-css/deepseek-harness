@@ -10,7 +10,7 @@ import usageRemote from '@deepseek-ai/dsh-unionpay-usage/remote'
 import { EnterprisePageController } from './controller.ts'
 import { EnterprisePage, EnterpriseToast } from './EnterprisePage.tsx'
 import { EnterpriseAccount } from './EnterpriseAccount.tsx'
-import { EnterpriseBrand } from './EnterpriseBrand.tsx'
+import { EnterpriseBrand, EnterpriseBrandMark } from './EnterpriseBrand.tsx'
 import { en, zh, type LocaleKey } from './locales.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -22,6 +22,12 @@ export const inject = ['slots', 'locale', 'configForms', 'remote']
 function registerUi(ctx: Context): void {
   ctx.effect(() => ctx.locale.register('unionpay', { en, zh }), 'unionpay: page dictionaries')
   const t = ctx.locale.bind('unionpay')
+  ctx.slots.inject('sidebar.brand.mark', () => ctx.slots.register({
+    name: 'sidebar.brand.mark',
+  }, EnterpriseBrandMark))
+  ctx.slots.inject('conversation.hero.brand.mark', () => ctx.slots.register({
+    name: 'conversation.hero.brand.mark',
+  }, EnterpriseBrandMark))
   ctx.slots.inject('sidebar.brand.name', () => ctx.slots.register({
     name: 'sidebar.brand.name', locale: 'unionpay',
   }, EnterpriseBrand))
