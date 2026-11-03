@@ -26,7 +26,8 @@ it('disables external integrations in a fresh enterprise Web profile', () => {
   const rows = composeEntries(profile.layers.map(layer => layer.patches), warning => warnings.push(warning))
   expect(warnings).toEqual([])
   expect(profile.layers.map(layer => layer.packageName)).toEqual([
-    '@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', 'dsh-ops', '@deepseek-ai/dsh-unionpay-bundle',
+    '@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', 'dsh-ops', 'dsh-context',
+    '@michengai/dsh-btw', 'dsh-mnemon', '@michengai/dsh-skills-manager', '@deepseek-ai/dsh-unionpay-bundle',
   ])
   for (const id of ['mode-minimal', 'mode-standard', 'mode-ptc', 'mode-cordis', 'discovery']) {
     expect(rows.find(row => row.id === `dsh-ops-${id}`), id).toBeDefined()
@@ -39,6 +40,10 @@ it('disables external integrations in a fresh enterprise Web profile', () => {
     .toEqual({ welcomeNotice: false, credentialOnboarding: false })
   expect(rows.find(row => row.id === 'ui-brand-official')).toMatchObject({ disabled: true })
   expect(rows.find(row => row.id === 'michengai-btw')).toMatchObject({ name: '@michengai/dsh-btw' })
+  expect(rows.find(row => row.id === 'mnemon-bundle')).toMatchObject({ name: 'dsh-mnemon/bundle', group: true })
+  expect(rows.find(row => row.id === 'skills-manager')).toMatchObject({
+    name: '@michengai/dsh-skills-manager', config: { updater: false },
+  })
   for (const id of [
     'plugin-package-inventory-deepseek', 'otel', 'desktop-product-telemetry', 'product-analytics',
     'session-telemetry-otel', 'command-feedback',
@@ -48,7 +53,7 @@ it('disables external integrations in a fresh enterprise Web profile', () => {
   ]) {
     expect(rows.find(row => row.id === id), id).toMatchObject({ disabled: true })
   }
-  for (const id of ['dsh-context', 'michengai-btw', 'unionpay-connection', 'llm-unionpay', 'unionpay-usage', 'ui-unionpay']) {
+  for (const id of ['dsh-context', 'michengai-btw', 'skills-manager', 'unionpay-connection', 'llm-unionpay', 'unionpay-usage', 'ui-unionpay']) {
     expect(rows.find(row => row.id === id), id).toMatchObject({ id })
     expect(rows.find(row => row.id === id)?.disabled, id).not.toBe(true)
   }

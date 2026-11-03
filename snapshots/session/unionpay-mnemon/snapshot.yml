@@ -1,0 +1,8 @@
+version: 1
+scenario: unionpay-mnemon
+profile: headless
+composition: unionpay-mnemon
+recording: authored
+header:
+  class: unionpay-mnemon
+  pin: true

@@ -66,6 +66,10 @@ describe('desktop external plugin profile', () => {
     expect(rows.find(row => row.id === 'dsh-context')?.disabled).not.toBe(true)
     expect(rows.find(row => row.id === 'michengai-btw')).toMatchObject({ name: '@michengai/dsh-btw' })
     expect(rows.find(row => row.id === 'michengai-btw')?.disabled).not.toBe(true)
+    expect(rows.find(row => row.id === 'mnemon-bundle')).toMatchObject({ name: 'dsh-mnemon/bundle', group: true })
+    expect(rows.find(row => row.id === 'skills-manager')).toMatchObject({
+      name: '@michengai/dsh-skills-manager', config: { updater: false },
+    })
     expect(profile.layers.map(layer => layer.packageName)).toContain('dsh-ops')
     for (const id of ['mode-minimal', 'mode-standard', 'mode-ptc', 'mode-cordis', 'discovery']) {
       expect(rows.find(row => row.id === `dsh-ops-${id}`), id).toBeDefined()

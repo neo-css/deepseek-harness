@@ -35,7 +35,7 @@ pnpm run build
 pnpm dsh web --no-open
 ```
 
-CLI 安装随附此 Bundle 及其依赖。已有 Profile 保留原有 Bundle 选择；添加企业默认配置的方法见[升级指南](../../../docs/upgrade-guide/v0.2.1-rc.5/unionpay-distribution-defaults/guide.zh.md)。
+CLI 安装随附此 Bundle 及其依赖。
 
 ### 连接并运行任务
 
@@ -48,7 +48,7 @@ CLI 安装随附此 Bundle 及其依赖。已有 Profile 保留原有 Bundle 选
 <a id="distribution-defaults"></a>
 ### 发布默认配置
 
-企业 Web 和桌面发行版依次加载 `@deepseek-ai/dsh-base`、`@deepseek-ai/dsh-web-app`、`dsh-ops` 和此组合包。随包发布的补丁文件在 macOS、Linux 和 Windows 上默认关闭以下集成，新 Profile 无需添加本地停用覆盖项：
+企业 Web 和桌面发行版依次加载 `@deepseek-ai/dsh-base`、`@deepseek-ai/dsh-web-app`、`dsh-ops`、`dsh-context`、`@michengai/dsh-btw`、`dsh-mnemon`、`@michengai/dsh-skills-manager` 和此组合包。随包发布的补丁文件在 macOS、Linux 和 Windows 上默认关闭以下集成，新 Profile 无需添加本地停用覆盖项：
 
 | 集成 | 配置项 ID |
 |---|---|
@@ -72,9 +72,13 @@ CLI 安装随附此 Bundle 及其依赖。已有 Profile 保留原有 Bundle 选
 
 Desktop 的生产运行时包含本 Bundle，并在全新 Profile 中默认加载它。全新的企业 Web 和 Desktop Profile 直接进入 UPH 工作区。Models 插件通过 `welcomeNotice: false` 关闭 Web 预览版说明，通过 `credentialOnboarding: false` 关闭自动凭证引导，包括原生官方欢迎页和登录页，不会代替用户写入已确认记录。
 
-两个客户端均随附并默认启用 `0.80.2` 版 [dsh-context](https://github.com/bowenliang123/dsh-context)。其 **Context（上下文）** 标签页和 **上下文洞察** 页面显示会话统计与上下文组成。实际输入、输出和缓存总量来自所配置模型返回的用量，经 DSH 本地 Session 投影提供；企业模型无需 DeepSeek 官方 API Key 或会话日志上传。各类别大小属于估算，提供方缺少计数字段时无法提供精确用量。费用使用 models.dev 公开价格估算，可能不包含私有模型 ID 或企业结算价格。在后续 Profile 补丁中停用 `dsh-context` 节点即可关闭该插件。
+两个客户端均随附并默认启用 `0.80.2` 版 [dsh-context](https://github.com/bowenliang123/dsh-context)。其 **Context（上下文）** 标签页和 **上下文洞察** 页面显示会话统计与上下文组成。实际输入、输出和缓存总量来自所配置模型返回的用量，经 DSH 本地 Session 投影提供；企业模型无需 DeepSeek 官方 API Key 或会话日志上传。各类别大小属于估算，提供方缺少计数字段时无法提供精确用量。费用使用 models.dev 公开价格估算，可能不包含私有模型 ID 或企业结算价格。各社区组合包在 **插件 → 已安装插件** 中均有独立卡片，包括发行包随附的副本；开关控制 Profile 是否选择该组合包。停用后随附文件仍保留，不提供卸载操作。
 
-两个客户端通过 `michengai-btw` 节点随附并默认启用 `1.3.2` 版 [DSH BTW](https://github.com/MichengAI/dsh-btw)。在会话中输入 `/btw 你的问题`，即可使用所选企业模型或自定义模型，基于当前上下文在独立气泡中回答旁问。默认工具白名单为空；除非明确要求回传，回答不会加入主对话。每次旁问都会额外请求模型并消耗 Token。在后续 Profile 补丁中停用该节点即可关闭。
+两个客户端通过 `michengai-btw` 节点随附并默认启用 `1.3.2` 版 [DSH BTW](https://github.com/MichengAI/dsh-btw)。在会话中输入 `/btw 你的问题`，即可使用所选企业模型或自定义模型，基于当前上下文在独立气泡中回答旁问。默认工具白名单为空；除非明确要求回传，回答不会加入主对话。每次旁问都会额外请求模型并消耗 Token。可通过其组合包卡片关闭。
+
+两个客户端将 [dsh-mnemon](https://github.com/omdsh-dev/dsh-mnemon) 固定为 `0.5.39`，作为独立组合包加载。它通过所选模型提供分层运行时记忆、文档检索与记忆空间。默认使用 Mnemon Native 在本地 `~/.mnemon` 存储记忆，该位置独立于 `DSH_HOME`；第三方提供方需要另行配置。自动采集增强策略和技能自进化默认保持关闭。记忆说明、召回内容及后台任务可能额外消耗模型 Token。
+
+两个客户端将 [Skills Manager](https://github.com/MichengAI/dsh-skills-manager) 固定为 `1.2.28`，作为独立组合包加载。**设置 → 技能** 可管理本地技能、项目技能与外部来源。企业补丁设置 `skills-manager.updater: false`，插件版本随应用发行更新。公开市场与 GitHub 安装需要访问相应网络。
 
 Desktop 解包 OPS 包，并在签名后更新内核校验值；这些发布步骤由[打包流程](../../../apps/desktop/packaging/README.zh.md#runtime-file-selection)负责。
 
@@ -82,7 +86,7 @@ Desktop 解包 OPS 包，并在签名后更新内核校验值；这些发布步�
 
 ### 配置部署限制
 
-Bundle 插入 `dsh-context`、`michengai-btw`、`unionpay-connection`、`llm-unionpay`、`unionpay-usage` 和 `ui-unionpay` 节点。在 Profile 的 `cordis.patch.yml` 中配置各包文档列出的字段。[连接](../../credentials/unionpay-connection/README.zh.md)、[模型](../../llm/llm-unionpay/README.zh.md)与[用量](../../telemetry/unionpay-usage/README.zh.md)包分别说明默认值和失败处理。
+Bundle 插入 `unionpay-connection`、`llm-unionpay`、`unionpay-usage` 和 `ui-unionpay` 节点。在 Profile 的 `cordis.patch.yml` 中配置各包文档列出的字段。[连接](../../credentials/unionpay-connection/README.zh.md)、[模型](../../llm/llm-unionpay/README.zh.md)与[用量](../../telemetry/unionpay-usage/README.zh.md)包分别说明默认值和失败处理。
 
 -----
 
@@ -111,11 +115,11 @@ Bundle 插入 `dsh-context`、`michengai-btw`、`unionpay-connection`、`llm-uni
 <a id="model-experience"></a>
 ## 模型体验
 
-通过负责协议转换的[受管模型插件](../../llm/llm-unionpay/README.zh.md#model-experience)，以及让请求不包含 `web_search` 和 `web_fetch` 的预设装配间接影响模型。OPS 组合包负责其工具定义、使用说明和动态 API 发布。BTW 负责其子会话提示词和工具限制。
+通过负责协议转换的[受管模型插件](../../llm/llm-unionpay/README.zh.md#model-experience)，以及让请求不包含 `web_search` 和 `web_fetch` 的预设装配间接影响模型。OPS 组合包负责其工具定义、使用说明和动态 API 发布。BTW 负责其子会话提示词和工具限制。Mnemon 负责记忆说明、召回与记忆工具。Skills Manager 提供额外技能来源及技能创建工具。
 
 #### KV Cache 影响
 
-被停用的网页工具不出现在请求的工具定义中。OPS 添加工具定义和说明，动态选择会改变后续请求。BTW 使用继承的历史与新增用户消息发起额外旁问请求。其余插件分别负责各自对请求历史和缓存的影响。
+被停用的网页工具不出现在请求的工具定义中。OPS 添加工具定义和说明，动态选择会改变后续请求。BTW 使用继承的历史与新增用户消息发起额外旁问请求。记忆与技能变更可能改变后续请求内容。其余插件分别负责各自对请求历史和缓存的影响。
 
 ## 已知限制与后续工作
 <a id="known-limitations-and-deferred-work"></a>

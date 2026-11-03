@@ -35,7 +35,7 @@ pnpm run build
 pnpm dsh web --no-open
 ```
 
-The CLI installation ships the bundle and its dependencies. Existing profiles retain their bundle selections; see the [upgrade guide](../../../docs/upgrade-guide/v0.2.1-rc.5/unionpay-distribution-defaults/guide.md) for adding the enterprise defaults.
+The CLI installation ships the bundle and its dependencies.
 
 ### Connect and run a task
 
@@ -48,7 +48,7 @@ Models settings shows only custom APIs; built-in provider cards and the provider
 <a id="distribution-defaults"></a>
 ### Distribution defaults
 
-Enterprise Web and desktop distributions load `@deepseek-ai/dsh-base`, `@deepseek-ai/dsh-web-app`, `dsh-ops`, and this bundle in that order. Its packaged patch files disable these integrations by default on macOS, Linux, and Windows; a fresh profile needs no local disable overrides:
+Enterprise Web and desktop distributions load `@deepseek-ai/dsh-base`, `@deepseek-ai/dsh-web-app`, `dsh-ops`, `dsh-context`, `@michengai/dsh-btw`, `dsh-mnemon`, `@michengai/dsh-skills-manager`, and this bundle in that order. Its packaged patch files disable these integrations by default on macOS, Linux, and Windows; a fresh profile needs no local disable overrides:
 
 | Integration | Entry ID |
 |---|---|
@@ -72,9 +72,13 @@ The standard, PTC, and creator presets also disable their web tools, so they loa
 
 Desktop ships this bundle in its production runtime and includes it in fresh profiles. Fresh enterprise Web and Desktop profiles open the UPH workspace directly. The Models plugin disables the Web preview notice (`welcomeNotice: false`) and automatic credential onboarding (`credentialOnboarding: false`), including the native official welcome and login pages, without recording an acknowledgement for the user.
 
-Both clients ship and enable [dsh-context](https://github.com/bowenliang123/dsh-context) at version `0.80.2`. Its **Context** tab and **Context Insights** page show session statistics and context composition. Actual input, output, and cache totals come from the configured model's reported usage through DSH's local Session projections; enterprise models do not require a DeepSeek official API key or session-log upload. Category sizes are estimates, and missing provider counters cannot supply exact usage. Cost estimates use models.dev public prices, which may not cover private model IDs or enterprise billing rates. Disable the `dsh-context` row in a later profile patch to turn the plugin off.
+Both clients ship and enable [dsh-context](https://github.com/bowenliang123/dsh-context) at version `0.80.2`. Its **Context** tab and **Context Insights** page show session statistics and context composition. Actual input, output, and cache totals come from the configured model's reported usage through DSH's local Session projections; enterprise models do not require a DeepSeek official API key or session-log upload. Category sizes are estimates, and missing provider counters cannot supply exact usage. Cost estimates use models.dev public prices, which may not cover private model IDs or enterprise billing rates. Each community bundle has its own card under **Plugins → Installed plugins**, including bundled copies; its switch changes profile selection. Bundled files remain installed when disabled and have no uninstall action.
 
-Both clients ship and enable [DSH BTW](https://github.com/MichengAI/dsh-btw) at version `1.3.2` through the `michengai-btw` row. Enter `/btw your question` in a conversation to ask about its context in a separate answer bubble, using the selected enterprise or custom model. The default tool whitelist is empty. Answers stay outside the main conversation unless explicitly sent back. Each side question makes an additional model request and consumes tokens. Disable this row in a later profile patch to turn it off.
+Both clients ship and enable [DSH BTW](https://github.com/MichengAI/dsh-btw) at version `1.3.2` through the `michengai-btw` row. Enter `/btw your question` in a conversation to ask about its context in a separate answer bubble, using the selected enterprise or custom model. The default tool whitelist is empty. Answers stay outside the main conversation unless explicitly sent back. Each side question makes an additional model request and consumes tokens. Use its bundle card to turn it off.
+
+Both clients pin [dsh-mnemon](https://github.com/omdsh-dev/dsh-mnemon) to `0.5.39` as a separate bundle. It supplies layered runtime memory, document recall, and Memory Spaces through the selected model. Mnemon Native stores memory locally under `~/.mnemon` by default, independently of `DSH_HOME`; third-party providers require configuration. The automatic-capture strategy and skill self-evolution remain off by default. Memory instructions, recalled content, and background work can consume additional model tokens.
+
+Both clients pin [Skills Manager](https://github.com/MichengAI/dsh-skills-manager) to `1.2.28` as a separate bundle. **Settings → Skills** manages local and project skills and external sources. The enterprise patch sets `skills-manager.updater: false`; plugin versions follow the application release. Public markets and GitHub installation need their corresponding network access.
 
 Desktop unpacks the OPS package and updates worker checksums after signing; [packaging](../../../apps/desktop/packaging/README.md#runtime-file-selection) owns these release steps.
 
@@ -82,7 +86,7 @@ Both clients pin [dsh-ops](https://github.com/T-Auto/dsh-ops/releases/tag/v0.4.4
 
 ### Configure deployment limits
 
-The bundle inserts rows named `dsh-context`, `michengai-btw`, `unionpay-connection`, `llm-unionpay`, `unionpay-usage`, and `ui-unionpay`. Configure their documented fields in the profile's `cordis.patch.yml`. The [connection](../../credentials/unionpay-connection/README.md), [model](../../llm/llm-unionpay/README.md), and [usage](../../telemetry/unionpay-usage/README.md) packages own their defaults and failure behavior.
+The bundle inserts rows named `unionpay-connection`, `llm-unionpay`, `unionpay-usage`, and `ui-unionpay`. Configure their documented fields in the profile's `cordis.patch.yml`. The [connection](../../credentials/unionpay-connection/README.md), [model](../../llm/llm-unionpay/README.md), and [usage](../../telemetry/unionpay-usage/README.md) packages own their defaults and failure behavior.
 
 -----
 
@@ -111,11 +115,11 @@ The bundle inserts rows named `dsh-context`, `michengai-btw`, `unionpay-connecti
 <a id="model-experience"></a>
 ## Model Experience
 
-Indirectly, through the [managed-model plugin](../../llm/llm-unionpay/README.md#model-experience) for protocol conversion and preset composition for requests without `web_search` or `web_fetch`. The OPS bundle owns its tool schemas, usage guidance, and dynamic API publication. BTW owns its child-session prompt and tool restrictions.
+Indirectly, through the [managed-model plugin](../../llm/llm-unionpay/README.md#model-experience) for protocol conversion and preset composition for requests without `web_search` or `web_fetch`. The OPS bundle owns its tool schemas, usage guidance, and dynamic API publication. BTW owns its child-session prompt and tool restrictions. Mnemon owns memory instructions, recall, and memory tools. Skills Manager supplies additional skill sources and its skill-creation tool.
 
 #### KV Cache effect
 
-The disabled web tools are absent from request schemas. OPS adds tool schemas and guidance; dynamic selections change subsequent requests. BTW adds a side request with inherited history and an additional user message. Each remaining plugin owns its request-history and cache effects.
+The disabled web tools are absent from request schemas. OPS adds tool schemas and guidance; dynamic selections change subsequent requests. BTW adds a side request with inherited history and an additional user message. Memory and skill changes can alter subsequent request contents. Each remaining plugin owns its request-history and cache effects.
 
 ## Known Limitations and Deferred Work
 <a id="known-limitations-and-deferred-work"></a>

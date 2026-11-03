@@ -1,0 +1,1145 @@
+{
+  "initial": [
+    {
+      "name": "bash",
+      "description": "Execute a bash command (`bash -c`) and return its stdout/stderr. Each call runs in a fresh shell; pass `workdir` instead of using `cd`. Managed `$DSH_*` variables expose current harness environment facts. Long output is truncated to its tail; the full output is saved to a file whose path is reported when available. Provide `description` before `command` in the arguments. Before any delete or move, verify that the resolved absolute target path is the intended one; never run it against a computed path you have not checked. An unset variable expands to an empty string, so guard variables in such paths with `${VAR:?}`. Commands may run under a file sandbox; a blocked file operation is reported as `[sandbox: file access denied under <mode> mode]`, a policy denial: do not retry another way.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Clear, concise description of what this command does in active voice, 5-10 words (shown in the UI). Examples: \"ls\" → \"List files in current directory\"; \"git status\" → \"Show working tree status\"; \"npm install\" → \"Install package dependencies\"."
+          },
+          "command": {
+            "type": "string",
+            "description": "The bash command to execute."
+          },
+          "timeoutMs": {
+            "type": "number",
+            "description": "Timeout in milliseconds. The executor applies its configured default and cap; on expiry the command moves to the background as a job instead of being killed."
+          },
+          "workdir": {
+            "type": "string",
+            "description": "Working directory for this command. Defaults to the session workspace; a relative path is resolved against it."
+          },
+          "run_in_background": {
+            "type": "boolean",
+            "description": "Run in the background and return a job id immediately (collect with job_output, stop with job_kill). No timeout applies."
+          },
+          "sandbox_permissions": {
+            "type": "string",
+            "description": "The narrowest wider sandbox mode for a one-shot retry of the exact command the sandbox just denied; the retry asks the user for approval.",
+            "enum": [
+              "workspace-write",
+              "danger-full-access"
+            ]
+          },
+          "justification": {
+            "type": "string",
+            "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact command needs the wider access. Use the language of the user’s current request."
+          }
+        },
+        "required": [
+          "description",
+          "command"
+        ]
+      }
+    },
+    {
+      "name": "create_goal",
+      "description": "Create a persisted goal that keeps this session working across automatic continuation rounds. Use it when the direct human request is a long-running objective, even if the user did not say \"goal\"; not for single-turn work.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "objective": {
+            "type": "string",
+            "description": "The concrete completion objective inferred from the direct human request."
+          },
+          "max_goal_rounds": {
+            "type": "number",
+            "description": "Optional positive safe-integer limit on automatic continuation rounds."
+          }
+        },
+        "required": [
+          "objective"
+        ]
+      }
+    },
+    {
+      "name": "edit",
+      "description": "Edit an existing UTF-8 text file by replacing literal text.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to edit, resolved by the filesystem backend. Provide `file_path` before `old_string` and `new_string` in the arguments."
+          },
+          "old_string": {
+            "type": "string",
+            "description": "Literal text to replace."
+          },
+          "new_string": {
+            "type": "string",
+            "description": "Literal replacement text. Use an empty string to delete the match."
+          },
+          "replace_all": {
+            "type": "boolean",
+            "description": "Replace all matches. Defaults to false; when false, old_string must appear exactly once."
+          },
+          "sandbox_permissions": {
+            "type": "string",
+            "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+            "enum": [
+              "workspace-write",
+              "danger-full-access"
+            ]
+          },
+          "justification": {
+            "type": "string",
+            "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+          }
+        },
+        "required": [
+          "file_path",
+          "old_string",
+          "new_string"
+        ]
+      }
+    },
+    {
+      "name": "exit_plan_mode",
+      "description": "Use only in plan mode. Present your plan for the user's review and, on approval, leave plan mode. The user may approve (carry out the plan from your next step) or keep planning — their feedback comes back in the tool result; revise and present again.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "string",
+            "description": "The complete plan, as markdown, starting with a # heading that names it."
+          }
+        },
+        "required": [
+          "plan"
+        ]
+      }
+    },
+    {
+      "name": "get_goal",
+      "description": "Read the current session goal, including the id and revision that update_goal requires.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "glob",
+      "description": "Find files, not directories, whose paths match a glob pattern, including hidden and ignored files. Returns up to 100 paths in modification-time order; a larger result keeps the first paths and reports where the complete list was saved.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Glob pattern to match file paths against (e.g. \"**/*.ts\", \"src/**/*.test.js\"). A pattern with no \"/\" matches the basename at any depth, so \"*\" and \"*.ts\" both search the whole tree; include a separator to anchor the depth."
+          },
+          "path": {
+            "type": "string",
+            "description": "Directory to search in. Defaults to the session workspace; a relative path resolves against it."
+          }
+        },
+        "required": [
+          "pattern"
+        ]
+      }
+    },
+    {
+      "name": "grep",
+      "description": "Search file contents with a ripgrep regular expression. Returns matching lines with line numbers, grouped by file. Returns up to 250 matches; a larger result reports where the complete match list was saved.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Regular expression to search for (ripgrep syntax)."
+          },
+          "path": {
+            "type": "string",
+            "description": "File or directory to search. Defaults to the session workspace; a relative path resolves against it."
+          },
+          "include": {
+            "type": "string",
+            "description": "One glob filter for which files to search (e.g. \"*.ts\", \"*.{js,jsx}\"). Not a list; negation is not supported."
+          }
+        },
+        "required": [
+          "pattern"
+        ]
+      }
+    },
+    {
+      "name": "interrupt_agent",
+      "description": "Ask a subagent to stop its current work. This call returns without waiting for it to stop. You can continue a local direct child's conversation later with send_message. External executions stop permanently and cannot receive follow-ups. Subagents it started will keep running.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "description": "The id of an agent created under you: your direct child or a deeper descendant."
+          }
+        },
+        "required": [
+          "agent_id"
+        ]
+      }
+    },
+    {
+      "name": "job_kill",
+      "description": "Request cancellation of a running background job.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "description": "Job id returned by the tool that started the background work."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Optional short reason, recorded in the log and forwarded to the job."
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      }
+    },
+    {
+      "name": "job_list",
+      "description": "List your background jobs (running and finished) with their ids, kinds, and statuses.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "job_output",
+      "description": "Read a background job: output since the previous read for stream jobs, or the result of a finished final-output job.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "description": "Job id returned by the tool that started the background work."
+          },
+          "wait": {
+            "type": "boolean",
+            "description": "Block until the job finishes or the timeout expires; a timed-out wait leaves the job running. Defaults to false."
+          },
+          "timeout_ms": {
+            "type": "number",
+            "description": "Max wait in milliseconds with wait: true. Defaults to and is capped by configuration."
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      }
+    },
+    {
+      "name": "list_agents",
+      "description": "List subagents you started, with their ids, labels, and status. running means it is working; inactive means it is not currently working. You will be notified when a subagent finishes; there is no need to keep checking its status. Use send_message to continue the conversation.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string",
+            "description": "children (default) lists direct children, which accept send_message in any status. descendants lists the whole tree below you with each entry's parent session id and depth; entries deeper than 1 accept only interrupt_agent.",
+            "enum": [
+              "children",
+              "descendants"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "mnemon_document_create",
+      "description": "Create one new managed project Document without updating or archiving existing documents. Search first and skip duplicates; save only substantial new reusable project knowledge, with references to related document ids. Capacity exhaustion rejects creation and preserves existing documents.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Meaningful project-document title."
+          },
+          "description": {
+            "type": "string",
+            "description": "Concise routing description."
+          },
+          "content": {
+            "type": "string",
+            "description": "New managed Markdown body."
+          },
+          "sourcePaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Read-only source paths relative to the workspace."
+          }
+        },
+        "required": [
+          "title",
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_document_manage",
+      "description": "Create or update one managed project Document through the Mnemon Documents control plane. Use for substantial reusable project knowledge, not user-profile preferences, routine progress, raw transcripts, secrets, or small hot-memory facts. Source paths are references inside the workspace and are never edited. Archive is allowed only from a root request and first writes a durable Mnemon cold-reference through an isolated subagent.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "update",
+              "archive"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "Required for update and archive."
+          },
+          "title": {
+            "type": "string",
+            "description": "Meaningful project-document title. Required for create."
+          },
+          "description": {
+            "type": "string",
+            "description": "Concise routing description."
+          },
+          "content": {
+            "type": "string",
+            "description": "Managed Markdown body. Required for create."
+          },
+          "sourcePaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Read-only source paths relative to the workspace."
+          }
+        },
+        "required": [
+          "action"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_document_search",
+      "description": "Run one focused search over project-scoped managed Documents before durable Recall. The Host admits only one Documents query per executing Agent turn; parallel calls share that slot, while child turns have independent budgets. Results contain bounded query-local evidence, not complete records. Cold archives are excluded unless a known archive reference requires them. It searches Documents only: memories in Memory Spaces are never in its results, so recall those with mnemon_recall.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Focused natural-language or keyword query. Empty lists recent documents."
+          },
+          "includeArchived": {
+            "type": "boolean",
+            "description": "Include cold archived originals only for explicit deep-reference inspection."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum results, 1 through 4 for model calls."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_forget",
+      "description": "Forget one insight by exact id only when its provider reports capabilities.forget=true (currently Mnemon Native soft-delete). This is a destructive semantic operation; use only when the user explicitly asks or the insight is verified obsolete or incorrect.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "memoryBodyId": {
+            "type": "string",
+            "description": "Body containing the insight id."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_link",
+      "description": "Create a typed, bidirectional relation between two known insights in one Memory Space. Use only when its provider reports capabilities.link=true (currently Mnemon Native), the relation improves future recall, and both ids were verified through recall or graph traversal.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "sourceId": {
+            "type": "string"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "temporal",
+              "semantic",
+              "causal",
+              "entity"
+            ]
+          },
+          "weight": {
+            "type": "number",
+            "description": "Relationship confidence from 0 through 1."
+          },
+          "reason": {
+            "type": "string"
+          },
+          "memoryBodyId": {
+            "type": "string",
+            "description": "Body containing both insight ids."
+          }
+        },
+        "required": [
+          "sourceId",
+          "targetId"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_memory_bodies",
+      "description": "Inspect a bounded Memory Space catalog with ids, routing, capabilities, activation, and health; paths, settings, and statistics are omitted. Use only for explicit space inspection or management, or before a capability-dependent write. Never call it to route Recall: omit memoryBodyIds and mnemon_recall searches every pinned active space.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "mnemon_memory_body_create",
+      "description": "Create a new isolated Memory Space under the user-configured persistence strategy. First inspect mnemon_memory_bodies.persistenceStrategy. In manual mode the host fixes the Provider. In automatic mode select only an eligible configured Provider from that policy and supply a concise reason and confidence; the host validates every hard rule and injects saved connection settings. Never invent credentials or endpoints. Use only for a distinct recurring durable scope, then write the qualifying insight with mnemon_remember, which activates it.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Topic-specific human-readable name that remains meaningful in the directory."
+          },
+          "description": {
+            "type": "string",
+            "description": "Precise routing boundary: what durable knowledge belongs here and when it should be recalled."
+          },
+          "providerId": {
+            "type": "string",
+            "description": "Automatic mode only: one eligible Provider id from persistenceStrategy."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Automatic mode only: concise user-facing reason for this Provider choice."
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "description": "Automatic mode only: calibrated confidence in the Provider choice."
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_memory_body_merge",
+      "description": "Non-destructively merge complete Mnemon Native source Memory Spaces into one Mnemon Native target through import, preserving durable nodes and typed graph edges. External providers are not mergeable. Use only after confirming substantial scope overlap or when the user requests consolidation. Source databases are retained and merely deactivated by default.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "targetMemoryBodyId": {
+            "type": "string"
+          },
+          "sourceMemoryBodyIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "One through 20 source Memory Space ids."
+          },
+          "deactivateSources": {
+            "type": "boolean",
+            "description": "Defaults to true. Never deletes source databases."
+          }
+        },
+        "required": [
+          "targetMemoryBodyId",
+          "sourceMemoryBodyIds"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_memory_body_update",
+      "description": "Update a Memory Space name, routing description, or activation state. Activation controls reads only. Use conservatively; prefer the user-facing toggle for ordinary manual activation changes.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "memoryBodyId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "memoryBodyId"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_recall",
+      "description": "Recall bounded durable evidence from this turn's pinned MemorySource only when the current question needs history. The Host allows one initial query plus one LLM-chosen different-query refinement, shares one evidence envelope, validates Memory Spaces, ignores brittle semantic filters, and replays duplicate queries. Omit memoryBodyIds to search every pinned active space. It searches the memories in Memory Spaces, not project Documents, which mnemon_document_search searches; of a cold-archived Document it finds only the index memory the archive left in a space.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Focused natural-language memory query."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "smart",
+              "keyword",
+              "basic"
+            ],
+            "description": "smart=graph-enhanced default, keyword=token ranking, basic=SQL LIKE fallback."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results. The model path caps output at 6."
+          },
+          "memoryBodyIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional known active Memory Space ids to narrow recall. Omit this field to search every pinned active space; do not list the catalog only to populate it. The Host rejects ids outside the pinned Source."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_related",
+      "description": "Traverse one insight admitted by this turn's mnemon_recall. At most one traversal is allowed per turn; use it only when the owning Memory Space reports capabilities.related=true and graph neighbors materially help. OpenViking does not currently support this operation. In a Mnemon Native space each neighbor names the edge it came through (edgeType): Mnemon adds temporal edges between memories written close in time and entity edges between memories that share an entity, so those are many; pass edge to follow one kind, such as semantic or causal. Other Providers name no edge type and do not filter by edge.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Insight id returned by mnemon_recall."
+          },
+          "depth": {
+            "type": "integer",
+            "description": "Traversal depth. The service accepts 1 through 5."
+          },
+          "edge": {
+            "type": "string",
+            "enum": [
+              "temporal",
+              "semantic",
+              "causal",
+              "entity"
+            ]
+          },
+          "memoryBodyId": {
+            "type": "string",
+            "description": "Active Memory Space that returned this insight id."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_remember",
+      "description": "Archive one durable insight in a selected provider-backed Memory Space. Ordinary new hot memory belongs in mnemon_runtime_memory; use direct archival only for explicit long-term persistence or runtime capacity migration. Choose the narrowest existing space, search it first, verify capabilities.remember=true, and wait for the provider receipt. Exact writes require confirmed persistence; providers using semantic extraction may truthfully return skipped. Do not dump transcripts, temporary progress, routine observations, or repository-obvious facts.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "One concise, self-contained durable insight."
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "preference",
+              "decision",
+              "fact",
+              "insight",
+              "context",
+              "general"
+            ]
+          },
+          "importance": {
+            "type": "integer",
+            "description": "Durable value from 1 through 5."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "At most 20 concise tags."
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "At most 50 named entities."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "user",
+              "agent",
+              "external"
+            ],
+            "description": "Defaults to agent for model-authored writeback."
+          },
+          "memoryBodyId": {
+            "type": "string",
+            "description": "Target Memory Space id; the write goes there or nowhere. Name a switched-off space only when the user wants it back, after switching it on with mnemon_memory_body_update. Required unless exactly one space is active."
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_runtime_memory",
+      "description": "Maintain compact hot memory injected into future turns. Write only new reusable facts supplied or corrected by the user, or information the user explicitly asks to save. Never copy, promote, or summarize evidence returned by Documents, Recall, or Related unless the user explicitly asks to save that exact evidence; answering a read question must stay read-only. add creates one independent fact; replace corrects or consolidates one uniquely matched entry; remove is only for an explicitly withdrawn, obsolete, or wrong entry. target=user is only for who the user is; target=memory is for project/environment/decisions/lessons. Skip questions, guesses, assistant-authored claims, temporary progress, completed-work logs, raw dumps, secrets, rediscoverable facts, and skill-covered guidance. This tool exclusively writes runtime MEMORY.md and USER.md; capacity archival and compaction are automatic. Optional branches (git branch names, target=memory only) project an entry only in sessions on those branches: use them for branch-specific decisions and experiments, tag new branch-scoped entries with the git branch reported in the snapshot header, omit for cross-branch facts; on replace an empty list clears the scope, and an omitted list keeps the current scope.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "add",
+              "replace",
+              "remove"
+            ],
+            "description": "add a new entry, replace one uniquely matched entry, or remove one uniquely matched entry."
+          },
+          "target": {
+            "type": "string",
+            "enum": [
+              "memory",
+              "user"
+            ],
+            "description": "user for user identity/preferences; memory for project, environment, decisions, and lessons."
+          },
+          "content": {
+            "type": "string",
+            "description": "Compact entry content. Required for add and replace."
+          },
+          "old_text": {
+            "type": "string",
+            "description": "Full content of the existing entry, or a unique substring. A unique full-content match takes precedence within the selected target. Required for replace and remove."
+          },
+          "importance": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "normal",
+              "low"
+            ],
+            "description": "critical for explicit must/always/never rules; low for transient facts; normal by default."
+          },
+          "branches": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional git branch names restricting where a target=memory entry is injected. Omit for cross-branch facts; on replace an empty list clears the scope and an omitted list keeps it. For target=user, omit or pass []; non-empty branches are rejected."
+          }
+        },
+        "required": [
+          "action",
+          "target"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_status",
+      "description": "Check a bounded health summary for memory-provider integrations and Memory Spaces. Use only when a memory operation fails or the user asks about memory health; full paths, settings, directories, and per-Space statistics stay in the control plane.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "mnemon_subagent_result",
+      "description": "Record a Mnemon delegated result. The child must use its current requestId and result schema from its completion instructions.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "requestId",
+          "result"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mnemon_view_action",
+      "description": "Execute one exact Action offered in the current MNEMON VIEW ROUTES envelope. The Host rechecks write policy and authority at call time and returns a mutation Receipt; an offer is never itself authorization.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "offerId": {
+            "type": "string",
+            "description": "Exact View ActionOffer id."
+          },
+          "input": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Action-specific JSON input described by the offered Action."
+          }
+        },
+        "required": [
+          "offerId",
+          "input"
+        ]
+      }
+    },
+    {
+      "name": "mnemon_view_route",
+      "description": "Execute one exact Route offered in the current MNEMON VIEW ROUTES envelope. Use only ids present in that envelope; the Host binds the request to its hidden ReadGrant, enforces call/result/character budgets, and returns Evidence.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "routeId": {
+            "type": "string",
+            "description": "Exact View Route id."
+          },
+          "input": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Route-specific JSON input described by the offered Route."
+          }
+        },
+        "required": [
+          "routeId",
+          "input"
+        ]
+      }
+    },
+    {
+      "name": "read",
+      "description": "Read a UTF-8 text file and return line-numbered content.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to read, resolved by the filesystem backend."
+          },
+          "offset": {
+            "type": "number",
+            "description": "1-based first line to return. Defaults to 1."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of lines to return. Defaults to 2000."
+          }
+        },
+        "required": [
+          "file_path"
+        ]
+      }
+    },
+    {
+      "name": "read_image",
+      "description": "Read a PNG/JPEG/WebP/GIF file and return the image itself. Large images are downscaled automatically; do not install image libraries or create thumbnails to inspect an image.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to the image file, resolved by the filesystem backend."
+          }
+        },
+        "required": [
+          "file_path"
+        ]
+      }
+    },
+    {
+      "name": "send_message",
+      "description": "Send a message to an agent. A working agent receives it at its next step; an idle agent starts a new turn with it. Returns delivery confirmation, not the agent's answer.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "description": "The agent id of your direct continuable child, or your direct parent when you are a resident continuable child."
+          },
+          "message": {
+            "type": "string",
+            "description": "The message to deliver to the agent."
+          }
+        },
+        "required": [
+          "agent_id",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "skill",
+      "description": "Load the full instructions for a skill. Call it before acting on a task that names or clearly matches a skill in the session skill catalog.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The exact skill name from the available skills list."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "subagent",
+      "description": "Delegate a self-contained task to a subagent (a separate agent that works in its own context) to offload focused, independent work — research, a scoped implementation, an analysis — so it does not consume this conversation's context. The subagent returns its result, not its intermediate steps. This tool starts an independently managed subagent and immediately returns its id. The runtime notifies you when it finishes. The child reports results with `send_message`; use `send_message` to steer it while running or continue its conversation after it finishes.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "cwd": {
+            "type": "string",
+            "description": "Initial child working directory. Relative paths use your current directory; omitted inherits it. Later directory changes in either agent are independent."
+          },
+          "description": {
+            "type": "string",
+            "description": "A short (3-5 word) description of the delegated task, for display."
+          },
+          "prompt": {
+            "type": "string",
+            "description": "The complete, self-contained task for the subagent. It does not share this conversation's context, so include everything it needs."
+          }
+        },
+        "required": [
+          "description",
+          "prompt"
+        ]
+      }
+    },
+    {
+      "name": "subagent_fork",
+      "description": "Delegate a task to a subagent that inherits this conversation: a child agent seeded with all completed turns so far (it does not see the current in-flight turn). Use this when the subtask builds on this conversation's context — a follow-up analysis, a review, a continuation — without consuming this conversation's context for the work itself. You receive its result, not its intermediate steps. This tool starts an independently managed subagent and immediately returns its id. The runtime notifies you when it finishes. The child reports results with `send_message`; use `send_message` to steer it while running or continue its conversation after it finishes.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "cwd": {
+            "type": "string",
+            "description": "Initial child working directory. Relative paths use your current directory; omitted inherits it. Later directory changes in either agent are independent."
+          },
+          "description": {
+            "type": "string",
+            "description": "A short (3-5 word) description of the delegated task, for display."
+          },
+          "prompt": {
+            "type": "string",
+            "description": "The task for the subagent. It already sees this conversation's completed turns, so build on them freely and state only what is new."
+          }
+        },
+        "required": [
+          "description",
+          "prompt"
+        ]
+      }
+    },
+    {
+      "name": "todo_write",
+      "description": "Record and update a task list to plan multi-step work and show progress; skip it for trivial single-step tasks. Add one todo per concrete step before you start. While work remains, keep the todos being worked on `in_progress`, several only when work runs in parallel. Mark each todo `completed` as soon as it is done.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "todos": {
+            "type": "array",
+            "description": "The COMPLETE task list, replacing any previous list.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "content": {
+                  "type": "string",
+                  "description": "What the task is — a short imperative line."
+                },
+                "status": {
+                  "type": "string",
+                  "description": "pending (not started) | in_progress (now) | completed (done).",
+                  "enum": [
+                    "pending",
+                    "in_progress",
+                    "completed"
+                  ]
+                }
+              },
+              "required": [
+                "content",
+                "status"
+              ]
+            }
+          }
+        },
+        "required": [
+          "todos"
+        ]
+      }
+    },
+    {
+      "name": "update_goal",
+      "description": "Update the current goal.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "goal_id": {
+            "type": "string",
+            "description": "Exact id returned by get_goal."
+          },
+          "revision": {
+            "type": "number",
+            "description": "Exact positive revision returned by get_goal."
+          },
+          "action": {
+            "type": "string",
+            "description": "edit, pause, and resume require a direct top-level human request. complete and blocked are also allowed during an automatic continuation of this goal; blocked is rejected before the configured minimum round count.",
+            "enum": [
+              "edit",
+              "pause",
+              "resume",
+              "complete",
+              "blocked"
+            ]
+          },
+          "objective": {
+            "type": "string",
+            "description": "Replacement objective; valid only with action edit."
+          },
+          "max_goal_rounds": {
+            "type": "number",
+            "description": "Replacement cap; valid only with action edit."
+          },
+          "blocked_reason": {
+            "type": "string",
+            "description": "Required only with action blocked: the concrete condition that persisted across rounds and blocks progress."
+          }
+        },
+        "required": [
+          "goal_id",
+          "revision",
+          "action"
+        ]
+      }
+    },
+    {
+      "name": "web_fetch",
+      "description": "Fetch the content of a specific HTTP(S) URL and return it decoded to text.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The HTTP(S) URL to fetch."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "web_search",
+      "description": "Search the web for current information. Returns an optional summary answer and a list of source URLs.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "queries": {
+            "type": "array",
+            "description": "1–4 search queries; their results are merged.",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "queries"
+        ]
+      }
+    },
+    {
+      "name": "workflow",
+      "description": "Run a JavaScript workflow script that orchestrates subagents at scale. Use this for work that fans out across many independent pieces — an audit over many files, a migration, multi-angle research, adversarial verification of findings — where you write the orchestration as a script instead of delegating turn by turn.\n\nScript-body hooks:\n- `agent(prompt, opts?): Promise<any>` — run one subagent to completion. Without `opts.schema` it resolves to the child's final text; with `opts.schema` (an object-rooted JSON Schema using ONLY type/properties/required/additionalProperties/items/enum/const/oneOf) it resolves to the validated object. Resolves `null` when the child fails (filter with `.filter(Boolean)`). Other opts: `label` (display), `phase` (progress group), and independent `provider`/`model` LLM target overrides.\n- `pipeline(items, ...stages): Promise<any[]>` — run each item through the stages independently with NO barrier between stages (prefer this for multi-stage work). Each stage receives `(prev, item, index)`. A stage throw drops that ITEM to `null` and skips its remaining stages.\n- `parallel(thunks): Promise<any[]>` — run zero-argument functions concurrently and await ALL of them (a barrier; use only when a stage genuinely needs every prior result together). A throwing thunk resolves to `null`.\n- `phase(title)` — start a progress phase; `log(message)` — narrate progress; `args` — the tool call's `args` input, verbatim.\n\nMisused hooks (bad arguments, unknown options, unsupported schemas, tripped caps) end the whole script instead of producing `null`. The script has no filesystem, network, timer, or Node.js APIs; the agents do the work.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "script": {
+            "type": "string",
+            "description": "The plain JavaScript body, not TypeScript and without an `export const meta` statement; top-level await is allowed. End with `return <value>`; the JSON-serializable value is this tool's result."
+          },
+          "meta": {
+            "type": "object",
+            "description": "The workflow identity as plain JSON, not code.",
+            "additionalProperties": true,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Short kebab-case workflow name."
+              },
+              "description": {
+                "type": "string",
+                "description": "One-line description of what the workflow does."
+              },
+              "whenToUse": {
+                "type": "string",
+                "description": "Optional guidance on when this workflow applies."
+              },
+              "phases": {
+                "type": "array",
+                "description": "Optional phase declarations matched by phase() calls.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "description": "The phase title phase() calls match by exact string."
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "Optional one-line description of the phase."
+                    },
+                    "provider": {
+                      "type": "string",
+                      "description": "Optional provider override this phase is expected to use."
+                    },
+                    "model": {
+                      "type": "string",
+                      "description": "Optional model override this phase is expected to use."
+                    }
+                  },
+                  "required": [
+                    "title"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "name",
+              "description"
+            ]
+          },
+          "args": {
+            "type": "object",
+            "description": "Optional JSON input exposed to the script as the `args` global (wrap a bare list as a field, e.g. {\"files\": [...]}).",
+            "additionalProperties": true
+          },
+          "run_in_background": {
+            "type": "boolean",
+            "description": "Run as a background job: return a job id immediately instead of waiting; the return value arrives with the completion notice."
+          }
+        },
+        "required": [
+          "script",
+          "meta"
+        ]
+      }
+    },
+    {
+      "name": "working_directory",
+      "description": "Read the current working directory, or change it with cd. Relative paths use the current directory. Existing shells and running processes keep their own directories.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "cd": {
+            "type": "string",
+            "description": "Existing directory to enter. Omit to read the current directory."
+          }
+        }
+      }
+    },
+    {
+      "name": "write",
+      "description": "Create or fully replace a UTF-8 text file.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to write, resolved by the filesystem backend. Provide `file_path` before `content` in the arguments."
+          },
+          "content": {
+            "type": "string",
+            "description": "Full UTF-8 text content to write."
+          },
+          "sandbox_permissions": {
+            "type": "string",
+            "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+            "enum": [
+              "workspace-write",
+              "danger-full-access"
+            ]
+          },
+          "justification": {
+            "type": "string",
+            "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+          }
+        },
+        "required": [
+          "file_path",
+          "content"
+        ]
+      }
+    }
+  ],
+  "changes": []
+}

@@ -7,12 +7,18 @@
  */
 
 import { readFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { relative, resolve } from 'node:path'
 import type { Nodes } from 'mdast'
 import { parseMarkdown, visitMarkdown } from './markdown.ts'
 import { isArchivedAgentNotePath, uniqueRepoFiles } from './repo-files.ts'
 
 const root = resolve(import.meta.dirname, '..')
+
+/** Published Mnemon 0.5.39 prompt text retained verbatim by its Session snapshot. */
+const VERBATIM_PARAGRAPHS = new Map([
+  ['snapshots/session/unionpay-mnemon/system-prompt.expected.md', '8971519aadcea2b43241ccb665d88413e8a0a93e9914596b1c239c633a62f1bb'],
+])
 
 /** Files to check: doc-typecheck's scope, system-prompt expected outputs, and the AGENTS.md pair. */
 const PATTERNS = [
@@ -60,6 +66,8 @@ function findViolations(absPath: string): Violation[] {
     if (node.type === 'paragraph' && node.position) {
       const { start, end } = node.position
       if (end.line > start.line) {
+        const paragraph = source.slice(start.offset, end.offset)
+        if (createHash('sha256').update(paragraph).digest('hex') === VERBATIM_PARAGRAPHS.get(file)) return false
         const firstLine = source.split('\n')[start.line - 1] ?? ''
         out.push({ file, line: start.line, text: firstLine.trim() })
       }

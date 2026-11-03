@@ -652,7 +652,7 @@ describe('PluginManagerPage', () => {
   })
 
   it('omits built-in profile dependencies while retaining optional and third-party bundles', () => {
-    renderTab({
+    const { actions, set } = renderTab({
       packages: [
         ...[
           '@deepseek-ai/dsh-base',
@@ -664,13 +664,19 @@ describe('PluginManagerPage', () => {
         ].map(name => pkg({ name })),
         pkg({ name: '@acme/dsh-base', readOnlyReason: 'management-required' }),
         pkg({ name: 'dsh-better-sidebar' }),
+        pkg({ name: 'dsh-preinstalled', installed: false, removable: false }),
         pkg({ name: '@deepseek-ai/dsh-experimental-agent-team-profile', installed: false, optional: true, removable: false }),
       ],
     })
     expect(screen.getAllByRole('listitem').map(card => card.getAttribute('data-plugin-package'))).toEqual([
-      '@deepseek-ai/dsh-experimental-agent-team-profile', '@acme/dsh-base', 'dsh-better-sidebar',
+      '@deepseek-ai/dsh-experimental-agent-team-profile', '@acme/dsh-base', 'dsh-better-sidebar', 'dsh-preinstalled',
     ])
     expect(document.querySelector('[data-plugin-count]')).toBeNull()
+    fireEvent.click(screen.getByRole('switch', { name: en.enableToggle.replace('{name}', 'dsh-preinstalled') }))
+    expect(actions.setEnabled).toHaveBeenCalledWith('dsh-preinstalled', false)
+    set({ packages: [pkg({ name: 'dsh-preinstalled', installed: false, removable: false, enabled: false })] })
+    expect(screen.getByRole('switch', { name: en.enableToggle.replace('{name}', 'dsh-preinstalled') }).getAttribute('aria-checked'))
+      .toBe('false')
   })
 
   it.each([false, true])('shows an empty list for built-in bundles with errors and installed=%s', (installed) => {

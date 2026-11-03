@@ -1325,6 +1325,12 @@ describe('headless recorded-session snapshots', () => {
             patchSources.forEach((source, index) => {
               materializeProfilePatch(source, cwd, 'headless', join(cwd, patchRoot), index)
             })
+            const profileManifest = join(scenario.dir, 'profile.package.json')
+            if (existsSync(profileManifest)) {
+              const profileDir = join(cwd, '.dsh/profiles/headless')
+              await mkdir(profileDir, { recursive: true })
+              await copyFile(profileManifest, join(profileDir, 'package.json'))
+            }
             if (mcpDemo !== undefined) {
               const profileDir = join(cwd, '.dsh/profiles/headless')
               await mkdir(profileDir, { recursive: true })

@@ -35,10 +35,13 @@ export function runtimeFixture(root: string, version = '1.0.0', nodeVersion = '2
   const names = [
     '@deepseek-ai/dsh', '@deepseek-ai/dsh-desktop-host', '@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app',
     '@deepseek-ai/cordis', '@deepseek-ai/dsh-unionpay-bundle', 'dsh-ops',
+    'dsh-context', '@michengai/dsh-btw', 'dsh-mnemon', '@michengai/dsh-skills-manager',
   ]
   for (const name of names) {
     const bundle = name === '@deepseek-ai/dsh-base' || name === '@deepseek-ai/dsh-web-app'
       || name === '@deepseek-ai/dsh-unionpay-bundle' || name === 'dsh-ops'
+      || name === 'dsh-context' || name === '@michengai/dsh-btw'
+      || name === 'dsh-mnemon' || name === '@michengai/dsh-skills-manager'
     const path = writePackage(join(root, 'node_modules'), name, {
       version,
       ...(name === '@deepseek-ai/dsh' ? { dependencies: Object.fromEntries(names.slice(1).map(dependency => [dependency, version])) } : {}),

@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "type": "module",
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-headless",
+        "dsh-mnemon"
+      ]
+    }
+  }
+}
