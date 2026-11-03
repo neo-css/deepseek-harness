@@ -36,7 +36,7 @@ it('disables external integrations in a fresh enterprise Web profile', () => {
   ]) {
     expect(rows.find(row => row.id === id), id).toMatchObject({ disabled: true })
   }
-  for (const id of ['unionpay-connection', 'llm-unionpay', 'unionpay-usage', 'ui-unionpay']) {
+  for (const id of ['dsh-context', 'unionpay-connection', 'llm-unionpay', 'unionpay-usage', 'ui-unionpay']) {
     expect(rows.find(row => row.id === id), id).toMatchObject({ id })
     expect(rows.find(row => row.id === id)?.disabled, id).not.toBe(true)
   }

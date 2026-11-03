@@ -61,6 +61,8 @@ describe('desktop external plugin profile', () => {
       expect(rows.find(row => row.id === id), id).toMatchObject({ disabled: true })
     }
     expect(rows.find(row => row.id === 'ui-unionpay')).toMatchObject({ name: '@deepseek-ai/dsh-client-ui-unionpay' })
+    expect(rows.find(row => row.id === 'dsh-context')).toMatchObject({ name: 'dsh-context' })
+    expect(rows.find(row => row.id === 'dsh-context')?.disabled).not.toBe(true)
   })
 
   it('preserves installed packages, profile state, and the lockfile when preparing a launch', async () => {

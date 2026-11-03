@@ -71,9 +71,11 @@ The standard, PTC, and creator presets also disable their web tools, so they loa
 
 Desktop ships this bundle in its production runtime and includes it in fresh profiles. Fresh enterprise Web and Desktop profiles open the UPH workspace directly. The Models plugin disables the Web preview notice (`welcomeNotice: false`) and automatic credential onboarding (`credentialOnboarding: false`), including the native official welcome and login pages, without recording an acknowledgement for the user.
 
+Both clients ship and enable [dsh-context](https://github.com/bowenliang123/dsh-context) at version `0.80.2`. Its **Context** tab and **Context Insights** page show session statistics and context composition. Actual input, output, and cache totals come from the configured model's reported usage through DSH's local Session projections; enterprise models do not require a DeepSeek official API key or session-log upload. Category sizes are estimates, and missing provider counters cannot supply exact usage. Cost estimates use models.dev public prices, which may not cover private model IDs or enterprise billing rates. Disable the `dsh-context` row in a later profile patch to turn the plugin off.
+
 ### Configure deployment limits
 
-The bundle inserts rows named `unionpay-connection`, `llm-unionpay`, `unionpay-usage`, and `ui-unionpay`. Configure their documented fields in the profile's `cordis.patch.yml`. The [connection](../../credentials/unionpay-connection/README.md), [model](../../llm/llm-unionpay/README.md), and [usage](../../telemetry/unionpay-usage/README.md) packages own their defaults and failure behavior.
+The bundle inserts rows named `dsh-context`, `unionpay-connection`, `llm-unionpay`, `unionpay-usage`, and `ui-unionpay`. Configure their documented fields in the profile's `cordis.patch.yml`. The [connection](../../credentials/unionpay-connection/README.md), [model](../../llm/llm-unionpay/README.md), and [usage](../../telemetry/unionpay-usage/README.md) packages own their defaults and failure behavior.
 
 -----
 

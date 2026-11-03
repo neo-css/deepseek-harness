@@ -64,6 +64,8 @@
     credentialOnboarding: false
 
 - insert:
+    - id: dsh-context
+      name: dsh-context
     - id: unionpay-connection
       name: '@deepseek-ai/dsh-unionpay-connection'
       config:

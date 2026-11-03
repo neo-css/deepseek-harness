@@ -71,9 +71,11 @@ CLI 安装随附此 Bundle 及其依赖。已有 Profile 保留原有 Bundle 选
 
 Desktop 的生产运行时包含本 Bundle，并在全新 Profile 中默认加载它。全新的企业 Web 和 Desktop Profile 直接进入 UPH 工作区。Models 插件通过 `welcomeNotice: false` 关闭 Web 预览版说明，通过 `credentialOnboarding: false` 关闭自动凭证引导，包括原生官方欢迎页和登录页，不会代替用户写入已确认记录。
 
+两个客户端均随附并默认启用 `0.80.2` 版 [dsh-context](https://github.com/bowenliang123/dsh-context)。其 **Context（上下文）** 标签页和 **上下文洞察** 页面显示会话统计与上下文组成。实际输入、输出和缓存总量来自所配置模型返回的用量，经 DSH 本地 Session 投影提供；企业模型无需 DeepSeek 官方 API Key 或会话日志上传。各类别大小属于估算，提供方缺少计数字段时无法提供精确用量。费用使用 models.dev 公开价格估算，可能不包含私有模型 ID 或企业结算价格。在后续 Profile 补丁中停用 `dsh-context` 节点即可关闭该插件。
+
 ### 配置部署限制
 
-Bundle 插入 `unionpay-connection`、`llm-unionpay`、`unionpay-usage` 和 `ui-unionpay` 四个节点。在 Profile 的 `cordis.patch.yml` 中配置各包文档列出的字段。[连接](../../credentials/unionpay-connection/README.zh.md)、[模型](../../llm/llm-unionpay/README.zh.md)与[用量](../../telemetry/unionpay-usage/README.zh.md)包分别说明默认值和失败处理。
+Bundle 插入 `dsh-context`、`unionpay-connection`、`llm-unionpay`、`unionpay-usage` 和 `ui-unionpay` 节点。在 Profile 的 `cordis.patch.yml` 中配置各包文档列出的字段。[连接](../../credentials/unionpay-connection/README.zh.md)、[模型](../../llm/llm-unionpay/README.zh.md)与[用量](../../telemetry/unionpay-usage/README.zh.md)包分别说明默认值和失败处理。
 
 -----
 

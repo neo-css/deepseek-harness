@@ -12,6 +12,8 @@
 - id: headless-runner
   inject: [headlessStartup, unionpayFixtureReady]
 - insert:
+    - id: dsh-context
+      name: dsh-context
     - id: unionpay-fixture
       name: ../unionpay-enterprise/gateway.mjs
     - id: unionpay-connection
