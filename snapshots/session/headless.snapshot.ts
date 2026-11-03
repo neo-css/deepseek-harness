@@ -920,6 +920,8 @@ async function verifyHeaders(scenario: HeadlessScenario, actualLogs: readonly Se
 
   const childPrompts = new Map<number, string>()
   const childSchemas = new Map<number, unknown[][]>()
+  const roleFixtures = await fixtureSessions(scenario)
+  const roleContext = contextOf(roleFixtures)
   for (const index of scenario.manifest.header.childSystemPrompts ?? []) {
     childPrompts.set(index, await readFile(join(scenario.dir, `system-prompt.${index}.expected.md`), 'utf8'))
   }
@@ -938,7 +940,11 @@ async function verifyHeaders(scenario: HeadlessScenario, actualLogs: readonly Se
     }
     for (const [index, header] of headers.entries()) {
       const selectedSchemas = childSchemas.get(logIndex)?.[index]
-      const base = reconstructed[index] ?? reconstructed[0]
+      const shared = reconstructed[index] ?? reconstructed[0]
+      // Child request options are pinned by their own Session; shared sidecars pin the tool schemas.
+      const base = logIndex === 0 ? shared : {
+        ...normalizedHeaders(roleFixtures[logIndex]!, roleContext)[index], tools: (shared as JsonObject).tools,
+      }
       const expected = selectedSchemas === undefined ? base : { ...base as JsonObject, tools: selectedSchemas }
       expect(header, `${scenario.name}: request header ${index + 1}`).toEqual(expected)
     }

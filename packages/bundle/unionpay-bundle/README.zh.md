@@ -73,13 +73,15 @@ Desktop 的生产运行时包含本 Bundle，并在全新 Profile 中默认加�
 
 两个客户端均随附并默认启用 `0.80.2` 版 [dsh-context](https://github.com/bowenliang123/dsh-context)。其 **Context（上下文）** 标签页和 **上下文洞察** 页面显示会话统计与上下文组成。实际输入、输出和缓存总量来自所配置模型返回的用量，经 DSH 本地 Session 投影提供；企业模型无需 DeepSeek 官方 API Key 或会话日志上传。各类别大小属于估算，提供方缺少计数字段时无法提供精确用量。费用使用 models.dev 公开价格估算，可能不包含私有模型 ID 或企业结算价格。在后续 Profile 补丁中停用 `dsh-context` 节点即可关闭该插件。
 
+两个客户端通过 `michengai-btw` 节点随附并默认启用 `1.3.2` 版 [DSH BTW](https://github.com/MichengAI/dsh-btw)。在会话中输入 `/btw 你的问题`，即可使用所选企业模型或自定义模型，基于当前上下文在独立气泡中回答旁问。默认工具白名单为空；除非明确要求回传，回答不会加入主对话。每次旁问都会额外请求模型并消耗 Token。在后续 Profile 补丁中停用该节点即可关闭。
+
 Desktop 解包 OPS 包，并在签名后更新内核校验值；这些发布步骤由[打包流程](../../../apps/desktop/packaging/README.zh.md#runtime-file-selection)负责。
 
 两个客户端固定使用 `0.4.4` 版 [dsh-ops](https://github.com/T-Auto/dsh-ops/releases/tag/v0.4.4)，直接加载其发布包中的 Bundle。Minimal、Standard、PTC、Cordis 和 discovery 节点默认启用，兼容、采集面板与 TUI 节点保持关闭。Standard 和 Cordis 使用 OPS 读取与搜索工具替换 `read`、`glob` 和 `grep`。PTC 提供常驻 API，并按需加载高级 API。此版本仅在 Windows 上将 Shell 替换为 OPS Bash；POSIX 保留 Host Bash 工具。这些本地工具可供企业模型使用，无需 DeepSeek 官方 API Key。后续 Profile 补丁可停用各 OPS 节点。
 
 ### 配置部署限制
 
-Bundle 插入 `dsh-context`、`unionpay-connection`、`llm-unionpay`、`unionpay-usage` 和 `ui-unionpay` 节点。在 Profile 的 `cordis.patch.yml` 中配置各包文档列出的字段。[连接](../../credentials/unionpay-connection/README.zh.md)、[模型](../../llm/llm-unionpay/README.zh.md)与[用量](../../telemetry/unionpay-usage/README.zh.md)包分别说明默认值和失败处理。
+Bundle 插入 `dsh-context`、`michengai-btw`、`unionpay-connection`、`llm-unionpay`、`unionpay-usage` 和 `ui-unionpay` 节点。在 Profile 的 `cordis.patch.yml` 中配置各包文档列出的字段。[连接](../../credentials/unionpay-connection/README.zh.md)、[模型](../../llm/llm-unionpay/README.zh.md)与[用量](../../telemetry/unionpay-usage/README.zh.md)包分别说明默认值和失败处理。
 
 -----
 
@@ -108,11 +110,11 @@ Bundle 插入 `dsh-context`、`unionpay-connection`、`llm-unionpay`、`unionpay
 <a id="model-experience"></a>
 ## 模型体验
 
-通过负责协议转换的[受管模型插件](../../llm/llm-unionpay/README.zh.md#model-experience)，以及让请求不包含 `web_search` 和 `web_fetch` 的预设装配间接影响模型。OPS 组合包负责其工具定义、使用说明和动态 API 发布。
+通过负责协议转换的[受管模型插件](../../llm/llm-unionpay/README.zh.md#model-experience)，以及让请求不包含 `web_search` 和 `web_fetch` 的预设装配间接影响模型。OPS 组合包负责其工具定义、使用说明和动态 API 发布。BTW 负责其子会话提示词和工具限制。
 
 #### KV Cache 影响
 
-被停用的网页工具不出现在请求的工具定义中。OPS 添加工具定义和说明，动态选择会改变后续请求。其余插件分别负责各自对请求历史和缓存的影响。
+被停用的网页工具不出现在请求的工具定义中。OPS 添加工具定义和说明，动态选择会改变后续请求。BTW 使用继承的历史与新增用户消息发起额外旁问请求。其余插件分别负责各自对请求历史和缓存的影响。
 
 ## 已知限制与后续工作
 <a id="known-limitations-and-deferred-work"></a>
@@ -121,6 +123,7 @@ Bundle 插入 `dsh-context`、`unionpay-connection`、`llm-unionpay`、`unionpay
 - 模型权限沿用管理服务对成员所属项目的并集授权。本地工作区选择不会建立项目级计费或授权。
 - 工单、设备执行关联、远控和更新分发需要分别适配。
 - 管理服务记录 `cli` 或 `desktop` 载体及带 `dsh-` 前缀的客户端版本，没有独立的 DSH 产品字段。
+- BTW `1.3.2` 在父会话未显式指定输出预算时请求最多 32,000 个输出 Token，模型目录默认值不会限制该请求。需核对部署模型提供方是否接受此预算。
 - OPS `0.4.4` 在当前 RC.5 运行时中，PTC 按需选择的 API 从下一步骤起可调用，但其类型声明延后一轮请求才发送给模型。原生 Standard 工具不受影响。
 - OPS `0.4.4` 随附 macOS arm64/x64、Linux x64 与 Windows x64 内核，不包含 Windows 和 Linux ARM64 内核。其 Windows Bash 可选依赖解压后约增加 411 MB，仍需在目标平台验收运行行为。
 - 本地测试服务验收覆盖管理协议兼容性。部署环境的 TLS、企业身份提供方和实际模型提供方仍需要在目标环境中验收。

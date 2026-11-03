@@ -66,6 +66,8 @@
 - insert:
     - id: dsh-context
       name: dsh-context
+    - id: michengai-btw
+      name: '@michengai/dsh-btw'
     - id: unionpay-connection
       name: '@deepseek-ai/dsh-unionpay-connection'
       config:

@@ -63,6 +63,8 @@ describe('desktop external plugin profile', () => {
     expect(rows.find(row => row.id === 'ui-unionpay')).toMatchObject({ name: '@deepseek-ai/dsh-client-ui-unionpay' })
     expect(rows.find(row => row.id === 'dsh-context')).toMatchObject({ name: 'dsh-context' })
     expect(rows.find(row => row.id === 'dsh-context')?.disabled).not.toBe(true)
+    expect(rows.find(row => row.id === 'michengai-btw')).toMatchObject({ name: '@michengai/dsh-btw' })
+    expect(rows.find(row => row.id === 'michengai-btw')?.disabled).not.toBe(true)
     expect(profile.layers.map(layer => layer.packageName)).toContain('dsh-ops')
     for (const id of ['mode-minimal', 'mode-standard', 'mode-ptc', 'mode-cordis', 'discovery']) {
       expect(rows.find(row => row.id === `dsh-ops-${id}`), id).toBeDefined()

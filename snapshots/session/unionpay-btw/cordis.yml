@@ -1,0 +1,49 @@
+# The external enterprise gateway replays the committed response over HTTP.
+- id: llm-deepseek
+  disabled: true
+- id: plugin-package-inventory-deepseek
+  disabled: true
+- id: session-log-deepseek
+  disabled: true
+- id: credentials
+  disabled: false
+- id: authorization
+  disabled: false
+- id: headless-runner
+  inject: [headlessStartup, unionpayFixtureReady]
+- insert:
+    - id: michengai-btw
+      name: '@michengai/dsh-btw'
+    - id: btw-snapshot-command
+      name: ./ask.mjs
+    - id: dsh-context
+      name: dsh-context
+    - id: unionpay-fixture
+      name: ../unionpay-enterprise/gateway.mjs
+    - id: unionpay-connection
+      name: '@deepseek-ai/dsh-unionpay-connection'
+      inject: [unionpayFixture]
+      config:
+        origin: !!js ctx.unionpayFixture.origin
+    - id: llm-unionpay
+      name: '@deepseek-ai/dsh-llm-unionpay'
+    - id: unionpay-usage
+      name: '@deepseek-ai/dsh-unionpay-usage'
+    - id: unionpay-fixture-ready
+      name: ../unionpay-enterprise/sign-in.mjs
+- id: otel
+  disabled: true
+- id: session-telemetry-otel
+  disabled: true
+- id: command-feedback
+  disabled: true
+- id: web
+  disabled: true
+- id: web-search-deepseek
+  disabled: true
+- id: web-deepseek-api
+  disabled: true
+- id: web-fetch-http
+  disabled: true
+- id: tool-web
+  disabled: true

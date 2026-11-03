@@ -107,6 +107,8 @@ minimumReleaseAgeExclude:
   - electron@44.7.0
   # Enterprise Web and Desktop distributions pin this context-insight plugin.
   - dsh-context@0.80.2
+  # Enterprise Web and Desktop distributions pin this side-question plugin.
+  - '@michengai/dsh-btw@1.3.2'
 patchedDependencies:
   '@earendil-works/pi-ai@1.3.0': patches/@earendil-works__pi-ai@1.3.0.patch
   '@electron/osx-sign@1.3.3': patches/@electron__osx-sign@1.3.3.patch

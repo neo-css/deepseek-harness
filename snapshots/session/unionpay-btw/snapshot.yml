@@ -1,0 +1,8 @@
+version: 1
+scenario: unionpay-btw
+profile: headless
+composition: unionpay-btw
+recording: authored
+header:
+  class: unionpay-btw
+  pin: true

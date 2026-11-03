@@ -38,6 +38,7 @@ it('disables external integrations in a fresh enterprise Web profile', () => {
   expect(rows.find(row => row.id === 'ui-settings-models')?.config)
     .toEqual({ welcomeNotice: false, credentialOnboarding: false })
   expect(rows.find(row => row.id === 'ui-brand-official')).toMatchObject({ disabled: true })
+  expect(rows.find(row => row.id === 'michengai-btw')).toMatchObject({ name: '@michengai/dsh-btw' })
   for (const id of [
     'plugin-package-inventory-deepseek', 'otel', 'desktop-product-telemetry', 'session-telemetry-otel', 'command-feedback',
     'message-feedback', 'ui-message-feedback', 'ui-settings-session-log',
@@ -46,7 +47,7 @@ it('disables external integrations in a fresh enterprise Web profile', () => {
   ]) {
     expect(rows.find(row => row.id === id), id).toMatchObject({ disabled: true })
   }
-  for (const id of ['dsh-context', 'unionpay-connection', 'llm-unionpay', 'unionpay-usage', 'ui-unionpay']) {
+  for (const id of ['dsh-context', 'michengai-btw', 'unionpay-connection', 'llm-unionpay', 'unionpay-usage', 'ui-unionpay']) {
     expect(rows.find(row => row.id === id), id).toMatchObject({ id })
     expect(rows.find(row => row.id === id)?.disabled, id).not.toBe(true)
   }
