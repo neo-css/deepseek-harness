@@ -56,6 +56,7 @@ Enterprise Web and desktop distributions load `@deepseek-ai/dsh-base`, `@deepsee
 | DeepSeek session-log upload | `session-log-deepseek` |
 | Session-log upload settings | `ui-settings-session-log` |
 | OpenTelemetry reporting service | `otel`, `desktop-product-telemetry` |
+| Desktop usage analytics | `product-analytics` |
 | Feedback session-log upload | `session-telemetry-otel` |
 | Session feedback command | `command-feedback` |
 | Message feedback recording | `message-feedback` |

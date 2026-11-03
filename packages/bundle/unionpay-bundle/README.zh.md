@@ -56,6 +56,7 @@ CLI 安装随附此 Bundle 及其依赖。已有 Profile 保留原有 Bundle 选
 | DeepSeek 会话日志上传 | `session-log-deepseek` |
 | 会话日志上传设置 | `ui-settings-session-log` |
 | OpenTelemetry 上报服务 | `otel`、`desktop-product-telemetry` |
+| 桌面端使用统计 | `product-analytics` |
 | 反馈会话日志上传 | `session-telemetry-otel` |
 | 会话反馈命令 | `command-feedback` |
 | 消息反馈记录 | `message-feedback` |

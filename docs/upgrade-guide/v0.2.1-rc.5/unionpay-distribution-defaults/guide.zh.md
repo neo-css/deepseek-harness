@@ -9,7 +9,7 @@ description: "Web 和 Desktop 随附 UPH 企业默认配置，生产更新要求
 
 ## 变更
 
-全新 Web 和 Desktop Profile 在基础与 Web 组合包之后依次加载 `dsh-ops` 和 `@deepseek-ai/dsh-unionpay-bundle`。它停用[发布默认配置](../../../../packages/bundle/unionpay-bundle/README.zh.md#distribution-defaults)列出的集成，包括 DeepSeek 上报、API Key 接入以及网页搜索和获取。标准、PTC 和创造预设关闭各自的网页工具。两个客户端直接进入 UPH 工作区，不显示预览说明或自动凭证引导；Desktop 跳过原生官方欢迎页、登录页和账号订阅。企业模型与自定义模型 API 保持可用。
+全新 Web 和 Desktop Profile 在基础与 Web 组合包之后依次加载 `dsh-ops` 和 `@deepseek-ai/dsh-unionpay-bundle`。它停用[发布默认配置](../../../../packages/bundle/unionpay-bundle/README.zh.md#distribution-defaults)列出的集成，包括 DeepSeek 上报、桌面端使用统计、API Key 接入以及网页搜索和获取。标准、PTC 和创造预设关闭各自的网页工具。两个客户端直接进入 UPH 工作区，不显示预览说明或自动凭证引导；Desktop 跳过原生官方欢迎页、登录页和账号订阅。企业模型与自定义模型 API 保持可用。
 
 桌面应用名称、菜单、托盘文案和安装包文件名使用 UPH。应用为 `UPH.app` 或 `UPH.exe`，发布文件使用 `uph-` 前缀。Web 文档标题和可安装 Web 应用名称也使用 UPH。生产更新要求配置 `DOWNLOAD_PROD_ORIGIN`，不再使用固定的官方下载站。SDK、ACP 和 headless 模板保留原有默认配置。
 

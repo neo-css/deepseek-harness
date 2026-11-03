@@ -28,6 +28,9 @@
 - id: desktop-product-telemetry
   disabled: true
 
+- id: product-analytics
+  disabled: true
+
 - id: session-telemetry-otel
   disabled: true
 

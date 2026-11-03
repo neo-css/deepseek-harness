@@ -9,7 +9,7 @@ English | [中文](guide.zh.md)
 
 ## Change
 
-Fresh Web and Desktop profiles load `dsh-ops` and then `@deepseek-ai/dsh-unionpay-bundle` after the base and Web bundles. It disables the integrations listed in its [distribution defaults](../../../../packages/bundle/unionpay-bundle/README.md#distribution-defaults), including DeepSeek reporting, API-key access, and web search and fetch. The standard, PTC, and creator presets disable their web tools. Both clients enter the UPH workspace without the preview notice or automatic credential onboarding; Desktop skips the native official welcome, login, and account subscription. Enterprise models and custom model APIs remain available.
+Fresh Web and Desktop profiles load `dsh-ops` and then `@deepseek-ai/dsh-unionpay-bundle` after the base and Web bundles. It disables the integrations listed in its [distribution defaults](../../../../packages/bundle/unionpay-bundle/README.md#distribution-defaults), including DeepSeek reporting, Desktop usage analytics, API-key access, and web search and fetch. The standard, PTC, and creator presets disable their web tools. Both clients enter the UPH workspace without the preview notice or automatic credential onboarding; Desktop skips the native official welcome, login, and account subscription. Enterprise models and custom model APIs remain available.
 
 Desktop application names, menus, tray text, and installer filenames use UPH. Applications are `UPH.app` or `UPH.exe`; release files use the `uph-` prefix. Web document titles and the installable Web application name also use UPH. Production updates require `DOWNLOAD_PROD_ORIGIN` instead of using a fixed official download site. The SDK, ACP, and headless templates keep their existing defaults.
 

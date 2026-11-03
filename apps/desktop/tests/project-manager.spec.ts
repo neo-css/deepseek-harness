@@ -56,6 +56,7 @@ describe('desktop external plugin profile', () => {
       .toEqual({ welcomeNotice: false, credentialOnboarding: false })
     for (const id of [
       'deepseek-account', 'llm-deepseek', 'ui-settings-account', 'ui-brand-official', 'session-log-deepseek',
+      'product-analytics', 'desktop-product-telemetry', 'otel',
       'message-feedback', 'ui-message-feedback', 'ui-settings-session-log',
     ]) {
       expect(rows.find(row => row.id === id), id).toMatchObject({ disabled: true })
