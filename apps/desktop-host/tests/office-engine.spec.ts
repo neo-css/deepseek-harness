@@ -3,7 +3,7 @@ import { createRequire, type ModuleHooks } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join, sep } from 'node:path'
 import { afterEach, expect, it } from 'vitest'
-import { installOfficeEngineResolution } from '../src/office-engine.ts'
+import { installDesktopNativeResolution } from '../src/office-engine.ts'
 import { PackageManifests } from '../../../packages/boot/hmr/src/package-manifest.ts'
 
 const roots: string[] = []
@@ -33,7 +33,7 @@ function fixture(runtimeName = 'dsh') {
   mkdirSync(dirname(api), { recursive: true })
   writeFileSync(api, '{"name":"@deepseek-ai/libreoffice-kit"}')
   const require: (specifier: string) => unknown = createRequire(join(runtime, 'package.json'))
-  const hook = installOfficeEngineResolution(runtime)!
+  const hook = installDesktopNativeResolution(runtime)!
   hooks.push(hook)
   return { root, runtime, manifest, require }
 }
@@ -51,6 +51,25 @@ it('resolves an absolute engine manifest to its unpacked copy', () => {
   const f = fixture()
   expect(f.require(join(f.runtime, f.manifest)))
     .toMatchObject({ path: realpathSync(dirname(join(f.root, 'app.asar.unpacked', 'dsh', f.manifest))) })
+})
+
+it('loads OPS and its relative worker paths from the unpacked package', () => {
+  const f = fixture()
+  for (const tree of ['app.asar', 'app.asar.unpacked']) {
+    const directory = join(f.root, tree, 'dsh/node_modules/dsh-ops')
+    mkdirSync(join(directory, 'lib'), { recursive: true })
+    writeFileSync(join(directory, 'package.json'), JSON.stringify({ name: 'dsh-ops', main: './lib/index.cjs' }))
+    writeFileSync(join(directory, 'lib/index.cjs'), 'module.exports = { runtime: require("node:path").resolve(__dirname, "../runtime"), bash: require("@dsh-ops/bash-win32-x64/package.json").path }')
+    const bash = join(f.root, tree, 'dsh/node_modules/@dsh-ops/bash-win32-x64')
+    mkdirSync(bash, { recursive: true })
+    writeFileSync(join(bash, 'package.json'), JSON.stringify({ name: '@dsh-ops/bash-win32-x64', path: bash }))
+  }
+  expect(f.require('dsh-ops')).toEqual({
+    runtime: join(f.root, 'app.asar.unpacked/dsh/node_modules/dsh-ops/runtime'),
+    bash: join(f.root, 'app.asar.unpacked/dsh/node_modules/@dsh-ops/bash-win32-x64'),
+  })
+  rmSync(join(f.root, 'app.asar.unpacked/dsh/node_modules/dsh-ops'), { recursive: true })
+  expect(() => { f.require('dsh-ops/package.json') }).toThrow()
 })
 
 it.each(['exports', 'main'] as const)('refreshes a cached plugin %s while Office resolution stays active', (field) => {
@@ -95,7 +114,7 @@ it('rejects an engine missing from the unpacked tree instead of using its archiv
 it('leaves a prepared runtime without an archive unchanged', () => {
   const root = mkdtempSync(join(tmpdir(), 'desktop-office-prepared-'))
   roots.push(root)
-  expect(installOfficeEngineResolution(join(root, 'dsh'))).toBeUndefined()
+  expect(installDesktopNativeResolution(join(root, 'dsh'))).toBeUndefined()
 })
 
 it('preserves a renamed runtime directory when locating the unpacked engine', () => {

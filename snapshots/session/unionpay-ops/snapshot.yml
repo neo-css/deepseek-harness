@@ -1,0 +1,8 @@
+version: 1
+scenario: unionpay-ops
+profile: headless
+composition: unionpay-ops
+recording: authored
+header:
+  class: unionpay-ops
+  pin: true

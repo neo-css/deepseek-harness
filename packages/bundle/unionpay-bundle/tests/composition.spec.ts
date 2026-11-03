@@ -25,6 +25,16 @@ it('disables external integrations in a fresh enterprise Web profile', () => {
   const warnings: string[] = []
   const rows = composeEntries(profile.layers.map(layer => layer.patches), warning => warnings.push(warning))
   expect(warnings).toEqual([])
+  expect(profile.layers.map(layer => layer.packageName)).toEqual([
+    '@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', 'dsh-ops', '@deepseek-ai/dsh-unionpay-bundle',
+  ])
+  for (const id of ['mode-minimal', 'mode-standard', 'mode-ptc', 'mode-cordis', 'discovery']) {
+    expect(rows.find(row => row.id === `dsh-ops-${id}`), id).toBeDefined()
+    expect(rows.find(row => row.id === `dsh-ops-${id}`)?.disabled, id).not.toBe(true)
+  }
+  for (const id of ['compat', 'panel', 'tui']) {
+    expect(rows.find(row => row.id === `dsh-ops-${id}`), id).toMatchObject({ disabled: true })
+  }
   expect(rows.find(row => row.id === 'ui-settings-models')?.config)
     .toEqual({ welcomeNotice: false, credentialOnboarding: false })
   expect(rows.find(row => row.id === 'ui-brand-official')).toMatchObject({ disabled: true })

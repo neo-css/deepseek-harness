@@ -13,6 +13,7 @@ import { createElectronBuilderConfig } from '../scripts/electron-builder-config.
 import { verifyRuntimeArchive } from '../scripts/verify-runtime-archive.ts'
 import { DESKTOP_HOST_PROTOCOL_VERSION } from '../src/host-protocol.ts'
 import { inventoryDesktopRuntime, type DesktopRuntimeDescriptor } from '../src/runtime-tree.ts'
+import { OPS_RUNTIME_METADATA_FILE } from '../scripts/ops-runtime.ts'
 
 vi.mock('../scripts/windows-sign.mjs', async importOriginal => ({
   ...await importOriginal<typeof import('../scripts/windows-sign.mjs')>(),
@@ -225,6 +226,34 @@ it.each([false, true])('unpacks platform ripgrep executables with external sourc
     expect(archive.getFile(path, false).unpacked).toBe(true)
     expect(await readFile(join(input.resources, 'app.asar.unpacked', path), 'utf8')).toBe('ripgrep fixture')
   }
+})
+
+it.each([false, true])('keeps OPS modules, metadata and workers outside ASAR with external source=%s', async (external) => {
+  const input = await fixture(external)
+  const packageRoot = 'node_modules/dsh-ops'
+  const files = ['package.json', 'lib/ptc/runtime.js', 'runtime/darwin-arm64/dsh-ops-worker', `runtime/darwin-arm64/${OPS_RUNTIME_METADATA_FILE}`]
+  for (const file of files) {
+    const path = join(input.source, packageRoot, file)
+    await mkdir(dirname(path), { recursive: true })
+    await writeFile(path, 'OPS fixture')
+  }
+  const bash = 'node_modules/@dsh-ops/bash-win32-x64'
+  for (const file of ['package.json', 'bin/bash.exe', 'usr/bin/msys-2.0.dll', 'etc/profile']) {
+    const path = join(input.source, bash, file)
+    await mkdir(dirname(path), { recursive: true })
+    await writeFile(path, 'OPS fixture')
+  }
+  const config = unsignedWindowsConfig('com.example.ops', input.source)
+  input.config.asarUnpack = [...config.asarUnpack]
+  await packageFixture(input)
+  const archive = await readAsar(join(input.resources, 'app.asar'))
+  for (const file of files) {
+    const path = join('dsh', packageRoot, file)
+    expect(archive.getFile(path, false).unpacked).toBe(true)
+    expect(await readFile(join(input.resources, 'app.asar.unpacked', path), 'utf8')).toBe('OPS fixture')
+  }
+  expect(archive.getFile(join('dsh', bash, 'package.json'), false).unpacked).toBe(true)
+  expect(archive.getFile(join('dsh', bash, 'etc/profile'), false).unpacked).toBe(true)
 })
 
 it.each([false, true])('keeps the complete Office engine outside ASAR with external source=%s', async (external) => {

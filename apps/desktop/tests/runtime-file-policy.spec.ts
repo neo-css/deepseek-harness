@@ -5,6 +5,7 @@ import { expect, it } from 'vitest'
 import { desktopRuntimeFileExclusion } from '../scripts/runtime-file-policy.ts'
 import { verifyDesktopRuntime, writeDesktopRuntime } from '../src/runtime-tree.ts'
 import { runtimeFixture } from './runtime-fixture.ts'
+import { OPS_RUNTIME_METADATA_FILE } from '../scripts/ops-runtime.ts'
 
 const windows = { platform: 'win32' as const, arch: 'x64' }
 
@@ -25,6 +26,9 @@ it('omits development artifacts while preserving executable modules, assets and 
     'node-pty/prebuilds/win32-arm64/conpty.node',
     'node-pty/prebuilds/linux-x64/pty.node', 'node-pty/prebuilds/darwin-x64/pty.node',
     'node-pty/prebuilds/win32-x64/conpty.pdb',
+    'dsh-ops/runtime/darwin-arm64/dsh-ops-worker',
+    'dsh-ops/runtime/darwin-x64/dsh-ops-worker',
+    'dsh-ops/runtime/linux-x64/dsh-ops-worker',
     '@koromix/koffi-win32-x64/win32_x64/koffi.lib',
     '@mixmark-io/domino/test/entities.html',
     '@mixmark-io/domino/.yarn/plugins/@yarnpkg/plugin-version.cjs',
@@ -41,6 +45,8 @@ it('omits development artifacts while preserving executable modules, assets and 
     'example/native.lib', 'example/native.obj', 'example/symbols.pdb',
     'fs-ext/build/Release/fs_ext.node', 'fs-ext/build/Release/runtime.dll',
     'node-pty/prebuilds/win32-x64/conpty.node',
+    'dsh-ops/runtime/win32-x64/dsh-ops-worker.exe',
+    `dsh-ops/runtime/win32-x64/${OPS_RUNTIME_METADATA_FILE}`,
     'node-pty/prebuilds/win32-x64/conpty_console_list.node',
     'node-pty/prebuilds/win32-x64/conpty/conpty.dll',
     'node-pty/prebuilds/win32-x64/conpty/OpenConsole.exe',
@@ -89,6 +95,8 @@ it('retains native prebuilds for the selected macOS architecture', () => {
   expect(desktopRuntimeFileExclusion('node-pty/prebuilds/darwin-arm64/pty.node', mac, 'darwin-arm64')).toBeUndefined()
   expect(desktopRuntimeFileExclusion('node-pty/prebuilds/darwin-x64/pty.node', mac, 'darwin-arm64')).toBeDefined()
   expect(desktopRuntimeFileExclusion('node-pty/prebuilds/win32-x64/conpty.node', mac, 'darwin-arm64')).toBeDefined()
+  expect(desktopRuntimeFileExclusion('dsh-ops/runtime/darwin-arm64/dsh-ops-worker', mac, 'darwin-arm64')).toBeUndefined()
+  expect(desktopRuntimeFileExclusion('outer/node_modules/dsh-ops/runtime/darwin-x64', mac, 'darwin-arm64')).toBeDefined()
 })
 
 it.each([

@@ -8,7 +8,7 @@ import { describe, expect, it, onTestFinished } from 'vitest'
 import type { EntryOptions } from '@deepseek-ai/cordis-plugin-loader'
 import { loadOverlayPatches } from '../packages/boot/app-boot/src/index.ts'
 import { readPluginMeta } from '../packages/boot/app-boot/src/package-meta.ts'
-import { OPTIONAL_BUNDLES, PROFILE_TEMPLATES, bundlePatchPaths, composeEntries, initProfile, readProfileManifest } from '../packages/boot/app-boot/src/profile.ts'
+import { OPTIONAL_BUNDLES, PROFILE_TEMPLATES, bundlePatchPaths, composeEntries, initProfile, loadProfileDirectory } from '../packages/boot/app-boot/src/profile.ts'
 import type { DshBundleManifest } from '../packages/util/package-manifest/src/types.ts'
 import { createPluginProfile } from '../apps/desktop/src/project-manager.ts'
 
@@ -53,9 +53,9 @@ function profileLayers(surface: 'web' | 'desktop'): ReturnType<typeof loadOverla
   onTestFinished(() => { rmSync(directory, { recursive: true, force: true }) })
   if (surface === 'desktop') createPluginProfile(directory)
   else initProfile(directory, PROFILE_TEMPLATES.web!.bundles)
-  const names = readProfileManifest('test', directory).dsh?.profile?.bundles
-  if (names === undefined) throw new Error(`${surface} profile has no bundle list`)
-  return names.map(name => bundle(name).patches)
+  const profile = loadProfileDirectory('test', directory, resolve(root, 'apps/cli/package.json'))
+  expect(profile.skippedBundles).toEqual([])
+  return profile.layers.map(layer => layer.patches)
 }
 
 describe.each(['web', 'desktop'] as const)('%s optional bundle overrides', (surface) => {

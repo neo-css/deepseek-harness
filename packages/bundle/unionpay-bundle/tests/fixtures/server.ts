@@ -7,7 +7,7 @@ import { modelResponse } from './model-response.ts'
 const secret = () => randomBytes(32).toString('base64url')
 const expires = () => new Date(Date.now() + 3600000).toISOString()
 
-export async function enterpriseFixture() {
+export async function enterpriseFixture(reply: typeof modelResponse = modelResponse) {
   const members = ['Alice', 'Bob'].map(name => ({ id: randomUUID(), name, department: 'Engineering', seat: 'developer' }))
   const models = (['openai-chat-completions', 'openai-responses', 'anthropic-messages'] as const).map((protocol, index) => ({
     id: randomUUID(), name: `Enterprise ${index}`, modelId: `enterprise-${index}`, protocol,
@@ -92,7 +92,7 @@ export async function enterpriseFixture() {
         await control.modelGate
         if (response.destroyed) return
         response.writeHead(200, { 'Content-Type': 'text/event-stream' })
-        response.end(modelResponse(model.protocol, !control.omitUsage))
+        response.end(reply(model.protocol, !control.omitUsage))
         return
       }
       if (path === '/collection/config') {

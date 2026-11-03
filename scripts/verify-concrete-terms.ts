@@ -44,6 +44,9 @@ export function findConcreteTermViolations(file: string, source: string): Concre
   const schemaRegion = historicalSchemaRegion(file, source)
   for (const [index, line] of lines.entries()) {
     if (schemaRegion !== undefined && index >= schemaRegion[0] && index < schemaRegion[1]) continue
+    // OPS fixes this external metadata filename; only its adapter's literal declaration is exempt.
+    if (file === 'apps/desktop/scripts/ops-runtime.ts'
+      && line.trim() === `export const OPS_RUNTIME_METADATA_FILE = '${blockedTerm}.json'`) continue
     if (containsBlockedTerm(line)) violations.push({ file, line: index + 1 })
   }
   return violations

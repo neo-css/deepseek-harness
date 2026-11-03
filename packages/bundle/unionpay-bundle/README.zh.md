@@ -48,7 +48,7 @@ CLI 安装随附此 Bundle 及其依赖。已有 Profile 保留原有 Bundle 选
 <a id="distribution-defaults"></a>
 ### 发布默认配置
 
-企业 Web 和桌面发行版在 `@deepseek-ai/dsh-base`、`@deepseek-ai/dsh-web-app` 之后加载此组合包。随包发布的补丁文件在 macOS、Linux 和 Windows 上默认关闭以下集成，新 Profile 无需添加本地停用覆盖项：
+企业 Web 和桌面发行版依次加载 `@deepseek-ai/dsh-base`、`@deepseek-ai/dsh-web-app`、`dsh-ops` 和此组合包。随包发布的补丁文件在 macOS、Linux 和 Windows 上默认关闭以下集成，新 Profile 无需添加本地停用覆盖项：
 
 | 集成 | 配置项 ID |
 |---|---|
@@ -72,6 +72,10 @@ CLI 安装随附此 Bundle 及其依赖。已有 Profile 保留原有 Bundle 选
 Desktop 的生产运行时包含本 Bundle，并在全新 Profile 中默认加载它。全新的企业 Web 和 Desktop Profile 直接进入 UPH 工作区。Models 插件通过 `welcomeNotice: false` 关闭 Web 预览版说明，通过 `credentialOnboarding: false` 关闭自动凭证引导，包括原生官方欢迎页和登录页，不会代替用户写入已确认记录。
 
 两个客户端均随附并默认启用 `0.80.2` 版 [dsh-context](https://github.com/bowenliang123/dsh-context)。其 **Context（上下文）** 标签页和 **上下文洞察** 页面显示会话统计与上下文组成。实际输入、输出和缓存总量来自所配置模型返回的用量，经 DSH 本地 Session 投影提供；企业模型无需 DeepSeek 官方 API Key 或会话日志上传。各类别大小属于估算，提供方缺少计数字段时无法提供精确用量。费用使用 models.dev 公开价格估算，可能不包含私有模型 ID 或企业结算价格。在后续 Profile 补丁中停用 `dsh-context` 节点即可关闭该插件。
+
+Desktop 解包 OPS 包，并在签名后更新内核校验值；这些发布步骤由[打包流程](../../../apps/desktop/packaging/README.zh.md#runtime-file-selection)负责。
+
+两个客户端固定使用 `0.4.4` 版 [dsh-ops](https://github.com/T-Auto/dsh-ops/releases/tag/v0.4.4)，直接加载其发布包中的 Bundle。Minimal、Standard、PTC、Cordis 和 discovery 节点默认启用，兼容、采集面板与 TUI 节点保持关闭。Standard 和 Cordis 使用 OPS 读取与搜索工具替换 `read`、`glob` 和 `grep`。PTC 提供常驻 API，并按需加载高级 API。此版本仅在 Windows 上将 Shell 替换为 OPS Bash；POSIX 保留 Host Bash 工具。这些本地工具可供企业模型使用，无需 DeepSeek 官方 API Key。后续 Profile 补丁可停用各 OPS 节点。
 
 ### 配置部署限制
 
@@ -104,11 +108,11 @@ Bundle 插入 `dsh-context`、`unionpay-connection`、`llm-unionpay`、`unionpay
 <a id="model-experience"></a>
 ## 模型体验
 
-通过负责协议转换的[受管模型插件](../../llm/llm-unionpay/README.zh.md#model-experience)，以及让请求不包含 `web_search` 和 `web_fetch` 的预设装配间接影响模型。
+通过负责协议转换的[受管模型插件](../../llm/llm-unionpay/README.zh.md#model-experience)，以及让请求不包含 `web_search` 和 `web_fetch` 的预设装配间接影响模型。OPS 组合包负责其工具定义、使用说明和动态 API 发布。
 
 #### KV Cache 影响
 
-被停用的网页工具不出现在请求的工具定义中。其余插件分别负责各自对请求历史和缓存的影响。
+被停用的网页工具不出现在请求的工具定义中。OPS 添加工具定义和说明，动态选择会改变后续请求。其余插件分别负责各自对请求历史和缓存的影响。
 
 ## 已知限制与后续工作
 <a id="known-limitations-and-deferred-work"></a>
@@ -117,6 +121,8 @@ Bundle 插入 `dsh-context`、`unionpay-connection`、`llm-unionpay`、`unionpay
 - 模型权限沿用管理服务对成员所属项目的并集授权。本地工作区选择不会建立项目级计费或授权。
 - 工单、设备执行关联、远控和更新分发需要分别适配。
 - 管理服务记录 `cli` 或 `desktop` 载体及带 `dsh-` 前缀的客户端版本，没有独立的 DSH 产品字段。
+- OPS `0.4.4` 在当前 RC.5 运行时中，PTC 按需选择的 API 从下一步骤起可调用，但其类型声明延后一轮请求才发送给模型。原生 Standard 工具不受影响。
+- OPS `0.4.4` 随附 macOS arm64/x64、Linux x64 与 Windows x64 内核，不包含 Windows 和 Linux ARM64 内核。其 Windows Bash 可选依赖解压后约增加 411 MB，仍需在目标平台验收运行行为。
 - 本地测试服务验收覆盖管理协议兼容性。部署环境的 TLS、企业身份提供方和实际模型提供方仍需要在目标环境中验收。
 
 <a id="dev-note"></a>

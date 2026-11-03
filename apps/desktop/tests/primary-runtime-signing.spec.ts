@@ -1,12 +1,14 @@
 import { mkdtemp, mkdir, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { createHash } from 'node:crypto'
 import { afterEach, expect, it, vi } from 'vitest'
 import { signWindowsPrimaryRuntime, signWindowsDesktopRuntime } from '../scripts/sign-primary-runtime.ts'
 import { inspectWindowsRuntimeSignature, preserveWindowsRuntimeSignature, windowsRuntimeCode, verifyWindowsCode, signWindowsCode } from '../scripts/windows-runtime-signature.mjs'
 import { runtimeFixture } from './runtime-fixture.ts'
-import { verifyDesktopRuntime } from '../src/runtime-tree.ts'
+import { verifyDesktopRuntime, writeDesktopRuntime } from '../src/runtime-tree.ts'
 import { createPackagingRun } from '../scripts/packaging-run.mjs'
+import { OPS_RUNTIME_METADATA_FILE } from '../scripts/ops-runtime.ts'
 
 const roots: string[] = []
 const thumbprint = 'A'.repeat(40)
@@ -256,6 +258,48 @@ it('records signed dependency bytes before smoke and rejects changes after smoke
   await expect(signWindowsDesktopRuntime(root, '1.0.0', { ...options,
     smoke: async () => { await writeFile(join(root, 'dependency.node'), 'mutated') },
   })).rejects.toThrow('integrity')
+})
+
+it('refreshes the OPS worker checksum before sealing signed Windows code', async () => {
+  const root = await fixture(['worker.exe'])
+  const descriptor = runtimeFixture(root)
+  const directory = join(root, 'node_modules/dsh-ops/runtime/win32-x64')
+  const worker = join(directory, 'dsh-ops-worker.exe')
+  const metadata = join(directory, OPS_RUNTIME_METADATA_FILE)
+  const bytes = await readFile(join(root, 'worker.exe'))
+  const receipt = { version: '1.0.0', target: 'win32-x64', executable: 'dsh-ops-worker.exe' }
+  await mkdir(directory, { recursive: true })
+  await writeFile(worker, bytes)
+  await writeFile(metadata, JSON.stringify({ ...receipt, sha256: createHash('sha256').update(bytes).digest('hex') }))
+  const proxies = join(directory, 'bash-ipc')
+  const msys = join(root, 'node_modules/@dsh-ops/bash-win32-x64/usr/bin/msys-2.0.dll')
+  await mkdir(proxies, { recursive: true })
+  await mkdir(join(msys, '..'), { recursive: true })
+  for (const file of [msys, join(proxies, 'opsipc.dll'), join(proxies, 'opsnt.dll')]) await writeFile(file, bytes)
+  await writeFile(join(proxies, OPS_RUNTIME_METADATA_FILE), JSON.stringify({
+    version: 1, platform: 'win32-x64', msysSha256: createHash('sha256').update(bytes).digest('hex'),
+    files: Object.fromEntries(['opsipc.dll', 'opsnt.dll'].map(name => [name, createHash('sha256').update(bytes).digest('hex')])),
+  }))
+  writeDesktopRuntime(root, descriptor.release, descriptor.sharedPackages.map(entry => entry.name))
+  const signed = new Set<string>()
+  await signWindowsDesktopRuntime(root, '1.0.0', {
+    thumbprint, record: () => {}, inspect: async path => signed.has(path) ? valid : unsigned,
+    sign: async ({ path }) => {
+      await writeFile(path, Buffer.concat([await readFile(path), Buffer.from('signature')]))
+      signed.add(path)
+    },
+    smoke: async () => {
+      expect(signed.has(worker)).toBe(true)
+      const current = JSON.parse(await readFile(metadata, 'utf8')) as Record<string, unknown>
+      expect(current.sha256).toBe(createHash('sha256').update(await readFile(worker)).digest('hex'))
+      const ipc = JSON.parse(await readFile(join(proxies, OPS_RUNTIME_METADATA_FILE), 'utf8')) as { msysSha256: string; files: Record<string, string> }
+      expect(ipc.msysSha256).toBe(createHash('sha256').update(await readFile(msys)).digest('hex'))
+      for (const name of ['opsipc.dll', 'opsnt.dll']) {
+        expect(ipc.files[name]).toBe(createHash('sha256').update(await readFile(join(proxies, name))).digest('hex'))
+      }
+      await verifyDesktopRuntime(root, '1.0.0')
+    },
+  })
 })
 
 it('bounds public-key inspection to four files and drains a failed batch before returning', async () => {

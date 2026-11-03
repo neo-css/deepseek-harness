@@ -4,10 +4,10 @@ import { delimiter, join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
 import { runCli } from '@deepseek-ai/dsh/lib/bin.js'
 import { runDesktopCli } from '../../desktop-host/src/cli.ts'
-import { installOfficeEngineResolution } from '../../desktop-host/src/office-engine.ts'
+import { installDesktopNativeResolution } from '../../desktop-host/src/office-engine.ts'
 
 vi.mock('@deepseek-ai/dsh/lib/bin.js', () => ({ runCli: vi.fn() }))
-vi.mock('../../desktop-host/src/office-engine.ts', () => ({ installOfficeEngineResolution: vi.fn() }))
+vi.mock('../../desktop-host/src/office-engine.ts', () => ({ installDesktopNativeResolution: vi.fn() }))
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -21,7 +21,7 @@ it.each(['system-bin', undefined])('dispatches with bundled pnpm when PATH is %s
 
   await runDesktopCli(runtime, support)
 
-  expect(installOfficeEngineResolution).toHaveBeenCalledExactlyOnceWith(runtime)
+  expect(installDesktopNativeResolution).toHaveBeenCalledExactlyOnceWith(runtime)
   expect(runCli).toHaveBeenCalledExactlyOnceWith({
     manageDesktopProfile: true,
     packageManager: {

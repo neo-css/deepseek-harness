@@ -48,7 +48,7 @@ Models settings shows only custom APIs; built-in provider cards and the provider
 <a id="distribution-defaults"></a>
 ### Distribution defaults
 
-Enterprise Web and desktop distributions load this bundle after `@deepseek-ai/dsh-base` and `@deepseek-ai/dsh-web-app`. Its packaged patch files disable these integrations by default on macOS, Linux, and Windows; a fresh profile needs no local disable overrides:
+Enterprise Web and desktop distributions load `@deepseek-ai/dsh-base`, `@deepseek-ai/dsh-web-app`, `dsh-ops`, and this bundle in that order. Its packaged patch files disable these integrations by default on macOS, Linux, and Windows; a fresh profile needs no local disable overrides:
 
 | Integration | Entry ID |
 |---|---|
@@ -72,6 +72,10 @@ The standard, PTC, and creator presets also disable their web tools, so they loa
 Desktop ships this bundle in its production runtime and includes it in fresh profiles. Fresh enterprise Web and Desktop profiles open the UPH workspace directly. The Models plugin disables the Web preview notice (`welcomeNotice: false`) and automatic credential onboarding (`credentialOnboarding: false`), including the native official welcome and login pages, without recording an acknowledgement for the user.
 
 Both clients ship and enable [dsh-context](https://github.com/bowenliang123/dsh-context) at version `0.80.2`. Its **Context** tab and **Context Insights** page show session statistics and context composition. Actual input, output, and cache totals come from the configured model's reported usage through DSH's local Session projections; enterprise models do not require a DeepSeek official API key or session-log upload. Category sizes are estimates, and missing provider counters cannot supply exact usage. Cost estimates use models.dev public prices, which may not cover private model IDs or enterprise billing rates. Disable the `dsh-context` row in a later profile patch to turn the plugin off.
+
+Desktop unpacks the OPS package and updates worker checksums after signing; [packaging](../../../apps/desktop/packaging/README.md#runtime-file-selection) owns these release steps.
+
+Both clients pin [dsh-ops](https://github.com/T-Auto/dsh-ops/releases/tag/v0.4.4) to `0.4.4` and load its published Bundle directly. Its Minimal, Standard, PTC, Cordis, and discovery rows start enabled; compatibility, capture panel, and TUI rows stay disabled. Standard and Cordis use OPS readers and search in place of `read`, `glob`, and `grep`. PTC exposes resident APIs and loads advanced APIs on demand. This version replaces the shell with OPS Bash only on Windows; POSIX keeps the Host Bash tool. These local tools work with enterprise models and need no DeepSeek official API key. Later profile patches can disable individual OPS rows.
 
 ### Configure deployment limits
 
@@ -104,11 +108,11 @@ The bundle inserts rows named `dsh-context`, `unionpay-connection`, `llm-unionpa
 <a id="model-experience"></a>
 ## Model Experience
 
-Indirectly, through the [managed-model plugin](../../llm/llm-unionpay/README.md#model-experience) for protocol conversion and preset composition for requests without `web_search` or `web_fetch`.
+Indirectly, through the [managed-model plugin](../../llm/llm-unionpay/README.md#model-experience) for protocol conversion and preset composition for requests without `web_search` or `web_fetch`. The OPS bundle owns its tool schemas, usage guidance, and dynamic API publication.
 
 #### KV Cache effect
 
-The disabled web tools are absent from request schemas. Each remaining plugin owns its request-history and cache effects.
+The disabled web tools are absent from request schemas. OPS adds tool schemas and guidance; dynamic selections change subsequent requests. Each remaining plugin owns its request-history and cache effects.
 
 ## Known Limitations and Deferred Work
 <a id="known-limitations-and-deferred-work"></a>
@@ -117,6 +121,8 @@ The disabled web tools are absent from request schemas. Each remaining plugin ow
 - Model authorization follows the management service's union of member projects. Local workspace selection does not establish project-level billing or authorization.
 - Work orders, device execution links, remote control, and update distribution need their own integration.
 - The management service reports the `cli` or `desktop` carrier with a `dsh-` client version; it has no dedicated DSH product field.
+- With OPS `0.4.4` on this RC.5 runtime, a PTC SDK selection becomes callable on the next step, but its declarations reach the model one request later. Native Standard tools are unaffected.
+- OPS `0.4.4` ships workers for macOS arm64/x64, Linux x64, and Windows x64. Windows and Linux ARM64 workers are not included. Its Windows Bash optional dependency adds about 411 MB unpacked. Target-platform runtime acceptance remains necessary.
 - Local fixture acceptance covers management protocol compatibility. A deployment's TLS, corporate identity provider, and actual model provider require deployment-specific acceptance.
 
 <a id="dev-note"></a>

@@ -52,6 +52,16 @@ describe('concrete terminology policy', () => {
     )).toEqual([])
   })
 
+  it('permits only the OPS adapter declaration of its required external metadata filename', () => {
+    const file = 'apps/desktop/scripts/ops-runtime.ts'
+    const declaration = `export const OPS_RUNTIME_METADATA_FILE = '${blockedTerm}.json'`
+    expect(findConcreteTermViolations(file, declaration)).toEqual([])
+    expect(findConcreteTermViolations(file, `${declaration} // ${blockedTerm}`)).toEqual([{ file, line: 1 }])
+    expect(findConcreteTermViolations(file, `'${blockedTerm}.json'`)).toEqual([{ file, line: 1 }])
+    expect(findConcreteTermViolations('packages/example/src/source.ts', declaration))
+      .toEqual([{ file: 'packages/example/src/source.ts', line: 1 }])
+  })
+
   it('excludes vendored sources and frozen Agent Notes', () => {
     expect(findConcreteTermViolations(`vendor/example/${blockedTerm}.ts`, blockedTerm)).toEqual([])
     expect(findConcreteTermViolations(
