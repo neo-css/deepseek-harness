@@ -1,4 +1,4 @@
-/** Enterprise distribution defaults composed from fresh Web and Desktop profiles. */
+/** Enterprise distribution defaults composed from a fresh Web profile. */
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -11,10 +11,10 @@ type PluginEntry = ReturnType<typeof composeEntries>[number]
 const bundleRoot = fileURLToPath(new URL('..', import.meta.url))
 const installAnchor = fileURLToPath(new URL('../../../../apps/cli/package.json', import.meta.url))
 
-it.each(['web', 'desktop'])('disables external integrations in a fresh enterprise %s profile', (name) => {
+it('disables external integrations in a fresh enterprise Web profile', () => {
   const root = mkdtempSync(join(tmpdir(), 'dsh-enterprise-profile-'))
   onTestFinished(() => { rmSync(root, { recursive: true, force: true }) })
-  const profileDir = join(root, name)
+  const profileDir = join(root, 'web')
   initProfile(profileDir, [...PROFILE_TEMPLATES.web!.bundles, '@deepseek-ai/dsh-unionpay-bundle'])
   const scope = join(profileDir, 'node_modules/@deepseek-ai')
   mkdirSync(scope, { recursive: true })

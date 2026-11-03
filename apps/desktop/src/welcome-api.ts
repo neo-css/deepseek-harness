@@ -73,3 +73,25 @@ export interface WelcomeAuthentication {
 export function needsWelcome(authentication: WelcomeAuthentication): boolean {
   return !authentication.loggedIn && !authentication.hasApiKey
 }
+
+/**
+ * Read the Models plugin's automatic credential-entry policy from Host bootstrap data.
+ * @param injections - Structured page injections received from the Desktop Host.
+ * @returns The published choice, or true when no Models plugin supplies a policy.
+ * @throws When the Host publishes duplicate or malformed onboarding options.
+ */
+export function credentialOnboardingEnabled(injections: readonly unknown[]): boolean {
+  let enabled = true
+  let found = false
+  for (const row of injections) {
+    if (typeof row !== 'object' || row === null || !('kind' in row) || row.kind !== 'global'
+      || !('name' in row) || row.name !== '__DSH_MODELS_ONBOARDING__') continue
+    if (found || !('value' in row) || typeof row.value !== 'object' || row.value === null
+      || !('credentialOnboarding' in row.value) || typeof row.value.credentialOnboarding !== 'boolean') {
+      throw new Error('desktop welcome: invalid credential onboarding policy')
+    }
+    found = true
+    enabled = row.value.credentialOnboarding
+  }
+  return enabled
+}

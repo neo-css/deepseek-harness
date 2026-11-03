@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { resolveDesktopPaths } from '../src/paths.ts'
 import { DesktopProjectManager } from '../src/project-manager.ts'
-import { readProfilePlugins } from '@deepseek-ai/dsh-app-boot'
+import { composeEntries, loadProfileDirectory, readProfilePlugins } from '@deepseek-ai/dsh-app-boot'
 import { runtimeFixture } from './runtime-fixture.ts'
 
 const roots: string[] = []
@@ -43,6 +43,23 @@ afterEach(() => {
 })
 
 describe('desktop external plugin profile', () => {
+  it('loads the enterprise bundle and its onboarding policy in a fresh Desktop profile', async () => {
+    const { manager } = setup()
+    await manager.applyRelease()
+    const scope = join(manager.paths.profile, 'node_modules/@deepseek-ai')
+    mkdirSync(scope, { recursive: true })
+    symlinkSync(join(import.meta.dirname, '../../../packages/bundle/unionpay-bundle'), join(scope, 'dsh-unionpay-bundle'), 'junction')
+    const profile = loadProfileDirectory('dsh', manager.paths.profile, join(import.meta.dirname, '../../cli/package.json'))
+    expect(profile.skippedBundles).toEqual([])
+    const rows = composeEntries(profile.layers.map(layer => layer.patches))
+    expect(rows.find(row => row.id === 'ui-settings-models')?.config)
+      .toEqual({ welcomeNotice: false, credentialOnboarding: false })
+    for (const id of ['deepseek-account', 'llm-deepseek', 'ui-settings-account', 'ui-brand-official']) {
+      expect(rows.find(row => row.id === id), id).toMatchObject({ disabled: true })
+    }
+    expect(rows.find(row => row.id === 'ui-unionpay')).toMatchObject({ name: '@deepseek-ai/dsh-client-ui-unionpay' })
+  })
+
   it('preserves installed packages, profile state, and the lockfile when preparing a launch', async () => {
     const { manager } = setup()
     await manager.applyRelease()
@@ -122,6 +139,7 @@ describe('desktop external plugin profile', () => {
     expect(manifest.dependencies.plugin).toBe('1.0.0')
     expect(manifest.dsh.profile.bundles).not.toContain('plugin')
     expect(manifest.dsh.profile.bundles).toContain('@deepseek-ai/dsh-web-app')
+    expect(manifest.dsh.profile.bundles).toContain('@deepseek-ai/dsh-unionpay-bundle')
     await manager.applyRelease()
     expect(readFileSync(patch, 'utf8')).toContain('[]')
   })

@@ -66,7 +66,7 @@ Enterprise Web and desktop distributions load this bundle after `@deepseek-ai/ds
 
 The standard, PTC, and creator presets also disable their web tools, so they load without the web service. The minimal preset has no web tools. Shell tools remain available for direct intranet HTTP requests where the execution environment permits them. Enterprise sign-in, managed models, usage reporting, and custom model APIs remain available. The management service origin defaults to empty and must be configured for the deployment.
 
-A fresh enterprise Web profile opens the workspace directly. Its Models plugin disables both the preview notice (`welcomeNotice: false`) and automatic API-key onboarding (`credentialOnboarding: false`), without recording an acknowledgement for the user.
+Desktop ships this bundle in its production runtime and includes it in fresh profiles. Fresh enterprise Web and Desktop profiles open the UPH workspace directly. The Models plugin disables the Web preview notice (`welcomeNotice: false`) and automatic credential onboarding (`credentialOnboarding: false`), including the native official welcome and login pages, without recording an acknowledgement for the user.
 
 ### Configure deployment limits
 

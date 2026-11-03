@@ -130,6 +130,7 @@ const harness = await vi.hoisted(async () => {
     }
   }
   class FakeHost {
+    injections: readonly unknown[] = []
     readonly updateTasks = vi.fn(async (_action: 'inspect' | 'lock' | 'unlock') => false)
     readonly inspectQuit = vi.fn(async () => ({ activeTasks: false, scheduledTasks: false }))
     url = 'http://127.0.0.1:3080/?token=test'
@@ -137,7 +138,10 @@ const harness = await vi.hoisted(async () => {
     readonly ready = deferred()
     readonly exited = deferred()
     readonly stopping = deferred()
-    readonly start = vi.fn(() => { hostStarted.resolve(); return this.ready.promise.then(() => ({ url: this.url, injections: [] })) })
+    readonly start = vi.fn(() => {
+      hostStarted.resolve()
+      return this.ready.promise.then(() => ({ url: this.url, injections: this.injections }))
+    })
     readonly stop = vi.fn(() => {
       this.stopping.resolve()
       this.ready.reject(new Error('child stopped'))
@@ -443,6 +447,28 @@ afterEach(async () => {
 })
 
 describe('desktop main startup', () => {
+  it.each(['win32', 'darwin', 'linux'])('opens the %s workspace without official authentication when the plugin disables onboarding', async (platform) => {
+    vi.stubGlobal('process', { ...process, platform })
+    const watch = vi.spyOn(harness, 'watchAccount')
+    await import('../src/main.ts')
+    await harness.preparing.promise
+    harness.prepared.resolve()
+    await harness.hostStarted.promise
+    const host = harness.hosts[0]!
+    host.injections = [{ kind: 'global', name: '__DSH_MODELS_ONBOARDING__',
+      value: { welcomeNotice: false, credentialOnboarding: false } }]
+    host.fetch.mockRejectedValue(new Error('official account is disabled'))
+    host.ready.resolve()
+    await harness.windows[0]!.shown.promise
+    await expect(`${JSON.stringify({
+      workspace: harness.windows[0]!.webContents.getURL(),
+      windows: harness.windows.length,
+      officialAccountSubscriptions: watch.mock.calls.length,
+      credentialChecks: host.fetch.mock.calls.length,
+      browserLaunches: harness.openExternal.mock.calls.length,
+    }, null, 2)}\n`).toMatchFileSnapshot('./expected/enterprise-startup.json')
+  })
+
   it.each([true, false])('selects the package manager before Host startup (packaged=%s)', async (packaged) => {
     harness.app.isPackaged = packaged
     await readyForUpdate()

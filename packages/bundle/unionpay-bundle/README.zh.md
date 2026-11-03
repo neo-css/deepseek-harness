@@ -66,7 +66,7 @@ pnpm dsh web --no-open
 
 标准、PTC 和创造预设也关闭各自的网页工具，从而在缺少网页服务时正常加载。最小预设不包含网页工具。执行环境允许时，仍可使用 Shell 工具直接请求内网 HTTP。企业登录、受管模型、用量上报和自定义模型 API 保持可用。管理服务地址默认为空，需要按部署环境配置。
 
-全新的企业 Web Profile 直接进入工作区。其 Models 插件通过 `welcomeNotice: false` 关闭预览版说明，并通过 `credentialOnboarding: false` 关闭自动 API Key 引导，不会代替用户写入已确认记录。
+Desktop 的生产运行时包含本 Bundle，并在全新 Profile 中默认加载它。全新的企业 Web 和 Desktop Profile 直接进入 UPH 工作区。Models 插件通过 `welcomeNotice: false` 关闭 Web 预览版说明，通过 `credentialOnboarding: false` 关闭自动凭证引导，包括原生官方欢迎页和登录页，不会代替用户写入已确认记录。
 
 ### 配置部署限制
 

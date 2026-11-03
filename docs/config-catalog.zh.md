@@ -615,7 +615,7 @@ export type OnboardingProcess = 'compact' | 'standard' | 'detailed'
 export interface Config {
   /** Show the browser preview notice before entering a new workspace. */
   welcomeNotice: boolean
-  /** Offer the browser API-key step when no native shell owns credential onboarding. */
+  /** Offer automatic account and API-key onboarding in Web and Desktop. */
   credentialOnboarding: boolean
 }
 ```
