@@ -1,6 +1,6 @@
 ---
 kind: upgrade-guide
-description: "UnionPay profiles disable DeepSeek reporting, API-key access, and web tools by default."
+description: "Web and Desktop ship UPH enterprise defaults and require an explicit production download origin."
 ---
 
 # UnionPay distribution defaults
@@ -9,10 +9,14 @@ English | [中文](guide.zh.md)
 
 ## Change
 
-The optional `@deepseek-ai/dsh-unionpay-bundle` disables the ten integrations listed in its [distribution defaults](../../../../packages/bundle/unionpay-bundle/README.md#distribution-defaults), including DeepSeek reporting, API-key access, and web search and fetch. Previously, profiles inherited those integrations from the base and Web bundles. The standard, PTC, and creator presets disable their web tools so they remain usable without the web service. Fresh Desktop profiles now include the enterprise bundle after the base and Web bundles. Enterprise Web and Desktop profiles open the UPH workspace without the preview notice or automatic credential onboarding; Desktop skips its native official welcome, login, and account subscription. Enterprise models and custom model APIs remain available.
+Fresh Web and Desktop profiles include `@deepseek-ai/dsh-unionpay-bundle` after the base and Web bundles. It disables the ten integrations listed in its [distribution defaults](../../../../packages/bundle/unionpay-bundle/README.md#distribution-defaults), including DeepSeek reporting, API-key access, and web search and fetch. The standard, PTC, and creator presets disable their web tools. Both clients enter the UPH workspace without the preview notice or automatic credential onboarding; Desktop skips the native official welcome, login, and account subscription. Enterprise models and custom model APIs remain available.
+
+Desktop application names, menus, tray text, and installer filenames use UPH. Applications are `UPH.app` or `UPH.exe`; release files use the `uph-` prefix. Web document titles and the installable Web application name also use UPH. Production updates require `DOWNLOAD_PROD_ORIGIN` instead of using a fixed official download site. The SDK, ACP, and headless templates keep their existing defaults.
 
 ## Migration
 
-1. Keep `@deepseek-ai/dsh-unionpay-bundle` after `@deepseek-ai/dsh-base` and `@deepseek-ai/dsh-web-app` in the enterprise profile's `package.json` under `dsh.profile.bundles`. Distribute both bundle patch files named by its package manifest. Fresh Desktop profiles include this bundle automatically. For an existing Desktop profile that omits this bundle, quit Desktop and append the bundle to `dsh.profile.bundles` in `$DSH_HOME/profiles/desktop/package.json`; the updated Desktop runtime already includes its package.
-2. Remove explicit `disabled: false` overrides for these integrations from later profile, home, or invocation patches if the deployment requires them to stay disabled. Also remove later preset overrides that enable `tool-web`.
-3. Start the profile and check **Settings → Built-in plugins**. All ten integrations must show disabled; the standard, PTC, and creator presets must load without missing-web-service errors. Confirm Desktop enters the UPH workspace without an official welcome or login page. Configure the deployment's management service origin under **Enterprise account**.
+1. Rebuild the CLI and desktop clients. Fresh Web and Desktop profiles select the enterprise bundle automatically. Existing profiles retain their selections: append `@deepseek-ai/dsh-unionpay-bundle` after `@deepseek-ai/dsh-base` and `@deepseek-ai/dsh-web-app` under `dsh.profile.bundles` in `$DSH_HOME/profiles/web/package.json` or `$DSH_HOME/profiles/desktop/package.json`. Both installations ship the bundle and its two patch files.
+2. Remove later `disabled: false` overrides for the listed integrations and preset overrides that enable `tool-web` if the deployment requires them to stay disabled.
+3. For production desktop packaging and upload, set `DOWNLOAD_PROD_ORIGIN` to the deployment's HTTPS download origin. Set the matching `publishing/production.json` origin for retained-release publication. Rebuild update metadata and download references with the UPH filenames; the release tooling accepts only the current names.
+4. Install the rebuilt application. Electron uses UPH for its application data and log directory; shared `$DSH_HOME` data remains at its configured path. No application-data directory migration is performed.
+5. Start each client and verify UPH branding without the sidebar version badge, no welcome or official login page, and all ten integrations disabled under **Settings → Built-in plugins**. Configure the management service origin under **Enterprise account**.

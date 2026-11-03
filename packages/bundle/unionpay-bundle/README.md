@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Connect one member's DSH instance to the existing UnionPay Code management service. This optional bundle provides enterprise account entry, browser SSO or access-code login, authorized models, and durable usage delivery. It disables DeepSeek official account sign-in, onboarding, and account-backed models in that profile. Shipped profiles do not enable it by default. Provider API keys stay on the management server; each member needs a separate DSH data directory.
+Connect one member's DSH instance to the existing UnionPay Code management service. This bundle provides enterprise account entry, browser SSO or access-code login, authorized models, and durable usage delivery. It disables DeepSeek official account sign-in, onboarding, and account-backed models in that profile. Fresh Web and Desktop profiles enable it by default. Provider API keys stay on the management server; each member needs a separate DSH data directory.
 
 ## Table of Contents
 
@@ -27,16 +27,15 @@ Connect one member's DSH instance to the existing UnionPay Code management servi
 
 ### Install from this checkout
 
-Build this workspace with its required Node version and dependencies. For development from this checkout, install the bundle through its local workspace path. Set `DSH_HOME` to an isolated directory before both installation and launch:
+Build this workspace with its required Node version and dependencies. Fresh Web profiles include the bundle. Set `DSH_HOME` to an isolated directory before launch:
 
 ```sh
 export DSH_HOME="$HOME/.dsh-unionpay"
 pnpm run build
-pnpm dsh plugin --profile web add "link:$PWD/packages/bundle/unionpay-bundle"
 pnpm dsh web --no-open
 ```
 
-The plugin manager adds the bundle to the profile's package manifest and activates its patch layer. pnpm may warn that a linked package does not obtain peer dependencies from the destination profile; this checkout's installed workspace supplies them. Keep the checkout and its dependencies available while using the link.
+The CLI installation ships the bundle and its dependencies. Existing profiles retain their bundle selections; see the [upgrade guide](../../../docs/upgrade-guide/v0.2.1-rc.5/unionpay-distribution-defaults/guide.md) for adding the enterprise defaults.
 
 ### Connect and run a task
 
@@ -54,7 +53,7 @@ Enterprise Web and desktop distributions load this bundle after `@deepseek-ai/ds
 | Integration | Entry ID |
 |---|---|
 | DeepSeek plugin inventory reporting | `plugin-package-inventory-deepseek` |
-| OpenTelemetry reporting service | `otel` |
+| OpenTelemetry reporting service | `otel`, `desktop-product-telemetry` |
 | Feedback session-log upload | `session-telemetry-otel` |
 | Session feedback command | `command-feedback` |
 | Web access service | `web` |

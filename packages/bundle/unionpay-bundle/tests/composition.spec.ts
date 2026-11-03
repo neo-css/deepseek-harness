@@ -15,7 +15,7 @@ it('disables external integrations in a fresh enterprise Web profile', () => {
   const root = mkdtempSync(join(tmpdir(), 'dsh-enterprise-profile-'))
   onTestFinished(() => { rmSync(root, { recursive: true, force: true }) })
   const profileDir = join(root, 'web')
-  initProfile(profileDir, [...PROFILE_TEMPLATES.web!.bundles, '@deepseek-ai/dsh-unionpay-bundle'])
+  initProfile(profileDir, PROFILE_TEMPLATES.web!.bundles)
   const scope = join(profileDir, 'node_modules/@deepseek-ai')
   mkdirSync(scope, { recursive: true })
   symlinkSync(bundleRoot, join(scope, 'dsh-unionpay-bundle'), 'junction')
@@ -29,8 +29,9 @@ it('disables external integrations in a fresh enterprise Web profile', () => {
     .toEqual({ welcomeNotice: false, credentialOnboarding: false })
   expect(rows.find(row => row.id === 'ui-brand-official')).toMatchObject({ disabled: true })
   for (const id of [
-    'plugin-package-inventory-deepseek', 'otel', 'session-telemetry-otel', 'command-feedback',
+    'plugin-package-inventory-deepseek', 'otel', 'desktop-product-telemetry', 'session-telemetry-otel', 'command-feedback',
     'web', 'web-search-deepseek', 'web-deepseek-api', 'web-fetch-http', 'tool-web', 'llm-deepseek',
+    'ui-settings-account', 'account-controller', 'deepseek-account', 'llm-deepseek-account',
   ]) {
     expect(rows.find(row => row.id === id), id).toMatchObject({ disabled: true })
   }

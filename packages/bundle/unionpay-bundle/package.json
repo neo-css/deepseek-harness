@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-unionpay-bundle",
-  "description": "Optional UnionPay Code enterprise sign-in, managed models, and usage reporting.",
+  "description": "UnionPay Code enterprise sign-in, managed models, and usage reporting.",
   "version": "0.2.1-rc.5",
   "type": "module",
   "main": "lib/index.js",

@@ -19,6 +19,9 @@
 - id: otel
   disabled: true
 
+- id: desktop-product-telemetry
+  disabled: true
+
 - id: session-telemetry-otel
   disabled: true
 

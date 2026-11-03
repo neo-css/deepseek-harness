@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 概述
 
-将一位成员的 DSH 实例连接到现有 UnionPay Code 管理服务。这个可选 Bundle 提供企业账号入口、浏览器 SSO 或接入码登录、授权模型和持久化用量上报，并关闭该 Profile 中的 DeepSeek 官方账号登录、引导和账号模型。内置 Profile 默认不启用它。供应商 API Key 保留在管理端；每位成员需要独立的 DSH 数据目录。
+将一位成员的 DSH 实例连接到现有 UnionPay Code 管理服务。这个 Bundle 提供企业账号入口、浏览器 SSO 或接入码登录、授权模型和持久化用量上报，并关闭该 Profile 中的 DeepSeek 官方账号登录、引导和账号模型。全新 Web 和 Desktop Profile 默认启用它。供应商 API Key 保留在管理端；每位成员需要独立的 DSH 数据目录。
 
 ## 目录
 
@@ -27,16 +27,15 @@ kind: "package-bundle"
 
 ### 从当前检出目录安装
 
-使用工作区要求的 Node 版本和依赖完成构建。从当前检出目录进行开发时，请使用工作区中的本地 Bundle 路径安装。安装和启动前都要将 `DSH_HOME` 设置为独立目录：
+使用工作区要求的 Node 版本和依赖完成构建。全新 Web Profile 已包含此 Bundle。启动前将 `DSH_HOME` 设置为独立目录：
 
 ```sh
 export DSH_HOME="$HOME/.dsh-unionpay"
 pnpm run build
-pnpm dsh plugin --profile web add "link:$PWD/packages/bundle/unionpay-bundle"
 pnpm dsh web --no-open
 ```
 
-插件管理器会把 Bundle 加入 Profile 的包清单并激活其补丁层。pnpm 可能警告链接包不会从目标 Profile 获取 peer dependencies；当前检出目录中安装的工作区依赖提供这些包。使用链接期间请保留检出目录及其依赖。
+CLI 安装随附此 Bundle 及其依赖。已有 Profile 保留原有 Bundle 选择；添加企业默认配置的方法见[升级指南](../../../docs/upgrade-guide/v0.2.1-rc.5/unionpay-distribution-defaults/guide.zh.md)。
 
 ### 连接并运行任务
 
@@ -54,7 +53,7 @@ pnpm dsh web --no-open
 | 集成 | 配置项 ID |
 |---|---|
 | DeepSeek 插件清单上报 | `plugin-package-inventory-deepseek` |
-| OpenTelemetry 上报服务 | `otel` |
+| OpenTelemetry 上报服务 | `otel`、`desktop-product-telemetry` |
 | 反馈会话日志上传 | `session-telemetry-otel` |
 | 会话反馈命令 | `command-feedback` |
 | 网页访问服务 | `web` |
