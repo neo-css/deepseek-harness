@@ -871,6 +871,7 @@ describe('desktop main startup', () => {
     } else {
       expect(window.options).not.toHaveProperty('titleBarStyle')
       expect(window.options).not.toHaveProperty('vibrancy')
+      expect(window.options).toMatchObject({ icon: join('desktop-test-resources', 'icon.png') })
     }
     expect(harness.hosts).toHaveLength(0)
   })
