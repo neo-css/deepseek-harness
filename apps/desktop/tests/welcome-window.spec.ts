@@ -72,6 +72,7 @@ describe('desktop welcome window', () => {
       expect(options.backgroundColor).toBe('#FFFFFF')
       expect(options.vibrancy).toBeUndefined()
       expect(options.backgroundMaterial).toBeUndefined()
+      expect(options.icon).toBe(join(electron.root, 'resources', 'icon.png'))
     }
   })
 

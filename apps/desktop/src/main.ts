@@ -228,6 +228,9 @@ function createWindow(preload: string, show = false, primary = false): BrowserWi
       visualEffectState: 'active' as const,
       backgroundColor: '#00000000',
     } : {}),
+    ...(process.platform === 'linux' ? {
+      icon: app.isPackaged ? join(process.resourcesPath, 'icon.png') : join(app.getAppPath(), 'resources', 'icon.png'),
+    } : {}),
     webPreferences: {
       preload,
       nodeIntegration: false,

@@ -93,7 +93,7 @@ pnpm run package:desktop:mac:x64
 pnpm run package:desktop:win:x64
 ```
 
-macOS arm64 命令要求 Apple Silicon。macOS x64 命令可以在 Intel macOS 或带 Rosetta 的 Apple Silicon 上运行。Windows x64 命令要求 Windows x64。Linux 不是受支持的 Desktop 发布目标。
+macOS arm64 命令要求 Apple Silicon。macOS x64 命令可以在 Intel macOS 或带 Rosetta 的 Apple Silicon 上运行。Windows x64 命令要求 Windows x64。在 Linux x64 宿主机上，运行 `pnpm run package:desktop:linux:x64`（或 `:appimage`、`:deb`、`:rpm`、`:dir`）可在 `apps/desktop/.desktop-build/targets/linux-x64/unsigned-artifacts/` 下生成包含 16–1024 像素 `hicolor` 图标集、`uph.desktop` 桌面入口与 WASM Sharp/LibreOffice 运行时的未签名 `AppImage`、`deb` 与 `rpm` 安装包；传入 `-- --only-targets` 可复用已有 `linux-unpacked` 目录直接生成 `deb`/`rpm`。
 
 macOS 正式发布和本地未签名 DMG 都通过 [electron-builder 配置](../scripts/electron-builder-config.mjs)中的 `dmg.format: 'ULMO'` 使用 LZMA 压缩。[构建时补丁](../../../patches/app-builder-lib@26.17.0.patch)为固定版本 builder 的校验规则和 TypeScript 声明添加此格式。
 
